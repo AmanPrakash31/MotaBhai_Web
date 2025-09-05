@@ -18,20 +18,22 @@ export interface Filters {
 
 interface MotorcycleFiltersProps {
   filters: Filters;
-  onFilterChange: (key: keyof Filters, value: string | number | number[] | ChangeEvent<HTMLInputElement>) => void;
+  onFilterChange: (key: keyof Filters, value: string | number | number[] | ChangeE_vent<HTMLInputElement>) => void;
   onReset: () => void;
   motorcycles: Motorcycle[];
 }
 
-const formatter = new Intl.NumberFormat('en-US', {
+const formatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
-  currency: 'USD',
+  currency: 'INR',
   minimumFractionDigits: 0,
 });
 
 export default function MotorcycleFilters({ filters, onFilterChange, onReset, motorcycles }: MotorcycleFiltersProps) {
   const makes = ['all', ...Array.from(new Set(motorcycles.map(m => m.make)))];
   const conditions = ['all', 'Excellent', 'Good', 'Fair', 'Poor'];
+
+  const maxPrice = Math.max(...motorcycles.map(m => m.price), 300000);
 
   return (
     <Card>
@@ -41,7 +43,7 @@ export default function MotorcycleFilters({ filters, onFilterChange, onReset, mo
             <Label htmlFor="search">Search by Make/Model</Label>
             <Input
               id="search"
-              placeholder="e.g., Harley-Davidson Iron 883"
+              placeholder="e.g., Royal Enfield Classic 350"
               value={filters.search}
               onChange={(e) => onFilterChange('search', e)}
             />
@@ -81,8 +83,8 @@ export default function MotorcycleFilters({ filters, onFilterChange, onReset, mo
             <Slider
               id="price"
               min={0}
-              max={25000}
-              step={500}
+              max={maxPrice}
+              step={1000}
               value={filters.priceRange}
               onValueChange={(value) => onFilterChange('priceRange', value)}
             />

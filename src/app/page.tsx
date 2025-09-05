@@ -18,7 +18,7 @@ export default function HomePage() {
     search: '',
     make: 'all',
     condition: 'all',
-    priceRange: [0, 25000],
+    priceRange: [40000, 300000],
   });
 
   const handleFilterChange = (
@@ -37,7 +37,7 @@ export default function HomePage() {
       search: '',
       make: 'all',
       condition: 'all',
-      priceRange: [0, 25000],
+      priceRange: [40000, 300000],
     });
   };
 
@@ -85,6 +85,7 @@ export default function HomePage() {
           <div
             className="split-item left"
             style={{ backgroundImage: "url('https://picsum.photos/seed/buybike/1200/800')" }}
+            data-ai-hint="motorcycle group"
           >
             <div className="split-content">
               <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Find Your Dream Bike</h2>
@@ -98,6 +99,7 @@ export default function HomePage() {
           <div
             className="split-item right"
             style={{ backgroundImage: "url('https://picsum.photos/seed/sellbike/1200/800')" }}
+             data-ai-hint="mechanic working"
           >
             <div className="split-content">
               <h2 className="text-sm font-bold uppercase tracking-widest text-primary">USED TWO WHEELER - BUY & SELL ONLINE</h2>

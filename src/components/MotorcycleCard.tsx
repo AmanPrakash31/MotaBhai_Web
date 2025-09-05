@@ -7,9 +7,9 @@ import { ArrowRight, Gauge, Calendar, Tag } from 'lucide-react';
 import { Button } from './ui/button';
 
 export default function MotorcycleCard({ motorcycle }: { motorcycle: Motorcycle }) {
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 0,
   });
 
@@ -41,7 +41,7 @@ export default function MotorcycleCard({ motorcycle }: { motorcycle: Motorcycle 
             </div>
             <div className="flex items-center gap-1.5">
               <Gauge className="w-4 h-4" />
-              <span>{motorcycle.mileage.toLocaleString()} mi</span>
+              <span>{motorcycle.mileage.toLocaleString('en-IN')} km</span>
             </div>
           </div>
           <div className="mt-4 flex-grow" />

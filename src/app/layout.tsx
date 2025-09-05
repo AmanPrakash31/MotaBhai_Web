@@ -5,8 +5,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: 'Mota Bhai Bikes | Quality Second-hand Motorcycles',
-  description: 'Your one-stop shop for buying and selling used motorcycles. Mota Bhai Automobiles.',
+  title: 'Mota Bhai Automobiles | Quality Second-hand Motorcycles',
+  description: 'Your one-stop shop for buying and selling used motorcycles in Muzaffarpur, Bihar.',
 };
 
 export default function RootLayout({

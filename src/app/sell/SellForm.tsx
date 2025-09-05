@@ -98,6 +98,12 @@ export default function SellForm() {
     });
   };
 
+  const formatter = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+  });
+
   return (
     <>
       <Card>
@@ -108,14 +114,14 @@ export default function SellForm() {
                 <FormField control={form.control} name="make" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Make</FormLabel>
-                    <FormControl><Input placeholder="e.g., Harley-Davidson" {...field} /></FormControl>
+                    <FormControl><Input placeholder="e.g., Royal Enfield" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="model" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Model</FormLabel>
-                    <FormControl><Input placeholder="e.g., Iron 883" {...field} /></FormControl>
+                    <FormControl><Input placeholder="e.g., Classic 350" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -128,8 +134,8 @@ export default function SellForm() {
                 )} />
                 <FormField control={form.control} name="mileage" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mileage</FormLabel>
-                    <FormControl><Input type="number" placeholder="e.g., 3500" {...field} /></FormControl>
+                    <FormLabel>Mileage (in km)</FormLabel>
+                    <FormControl><Input type="number" placeholder="e.g., 8500" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -147,9 +153,9 @@ export default function SellForm() {
                 )} />
                 <FormField control={form.control} name="price" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Your Listing Price</FormLabel>
-                    <FormControl><Input type="number" placeholder="e.g., 9500" {...field} /></FormControl>
-                    <FormDescription>Enter your desired selling price.</FormDescription>
+                    <FormLabel>Your Listing Price (in ₹)</FormLabel>
+                    <FormControl><Input type="number" placeholder="e.g., 180000" {...field} /></FormControl>
+                    <FormDescription>Enter your desired selling price in INR.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -196,7 +202,7 @@ export default function SellForm() {
           </DialogHeader>
           {suggestion && (
             <div className="py-4">
-              <p className="text-center text-4xl font-bold text-primary mb-4">${suggestion.suggestedPrice.toLocaleString()}</p>
+              <p className="text-center text-4xl font-bold text-primary mb-4">{formatter.format(suggestion.suggestedPrice)}</p>
               <h4 className="font-semibold mt-6 mb-2">Reasoning:</h4>
               <p className="text-sm text-muted-foreground bg-secondary p-3 rounded-md">{suggestion.reasoning}</p>
             </div>

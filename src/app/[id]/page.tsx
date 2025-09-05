@@ -22,15 +22,15 @@ export default function MotorcycleDetailPage({ params }: { params: { id: string 
     notFound();
   }
   
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 0,
   });
 
   const specItems = [
     { icon: Calendar, label: 'Year', value: motorcycle.year },
-    { icon: Gauge, label: 'Mileage', value: `${motorcycle.mileage.toLocaleString()} mi` },
+    { icon: Gauge, label: 'Mileage', value: `${motorcycle.mileage.toLocaleString('en-IN')} km` },
     { icon: ShieldCheck, label: 'Condition', value: motorcycle.condition },
     { icon: Tag, label: 'Price', value: formatter.format(motorcycle.price) },
   ];

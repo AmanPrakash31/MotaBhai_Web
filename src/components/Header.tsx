@@ -35,7 +35,7 @@ export default function Header() {
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Bike className="h-6 w-6 text-primary" />
-          <span className="font-bold sm:inline-block">Mota Bhai Bikes</span>
+          <span className="font-bold sm:inline-block">Mota Bhai Automobiles</span>
         </Link>
         <nav className="hidden md:flex flex-1 items-center space-x-6 text-sm font-medium">
           {navLinks.map(link => (
