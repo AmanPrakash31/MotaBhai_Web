@@ -1,25 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import type { ChangeEvent } from 'react';
-import { motorcycles as allMotorcycles, testimonials } from '@/lib/data';
-import MotorcycleCard from '@/components/MotorcycleCard';
-import MotorcycleFilters, { type Filters } from '@/components/MotorcycleFilters';
-import TestimonialCard from '@/components/TestimonialCard';
-import type { Motorcycle } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { FileText, HomeIcon, IndianRupee } from 'lucide-react';
-import Image from 'next/image';
-import './split-hover.css';
-
+import { useState, useMemo } from "react";
+import type { ChangeEvent } from "react";
+import { motorcycles as allMotorcycles, testimonials } from "@/lib/data";
+import MotorcycleCard from "@/components/MotorcycleCard";
+import MotorcycleFilters, {
+  type Filters,
+} from "@/components/MotorcycleFilters";
+import TestimonialCard from "@/components/TestimonialCard";
+import type { Motorcycle } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { FileText, HomeIcon, IndianRupee } from "lucide-react";
+import Image from "next/image";
+import "./split-hover.css";
 export default function HomePage() {
   const [filters, setFilters] = useState<Filters>({
-    search: '',
-    make: 'all',
-    condition: 'all',
+    search: "",
+    make: "all",
+    condition: "all",
     priceRange: [40000, 300000],
   });
 
@@ -27,18 +34,21 @@ export default function HomePage() {
     key: keyof Filters,
     value: string | number | number[] | ChangeEvent<HTMLInputElement>
   ) => {
-    if (key === 'search' && typeof value === 'object' && 'target' in value) {
-      setFilters(prev => ({ ...prev, [key]: (value as ChangeEvent<HTMLInputElement>).target.value }));
+    if (key === "search" && typeof value === "object" && "target" in value) {
+      setFilters((prev) => ({
+        ...prev,
+        [key]: (value as ChangeEvent<HTMLInputElement>).target.value,
+      }));
     } else {
-      setFilters(prev => ({ ...prev, [key]: value }));
+      setFilters((prev) => ({ ...prev, [key]: value }));
     }
   };
-  
+
   const handleResetFilters = () => {
     setFilters({
-      search: '',
-      make: 'all',
-      condition: 'all',
+      search: "",
+      make: "all",
+      condition: "all",
       priceRange: [40000, 300000],
     });
   };
@@ -49,35 +59,39 @@ export default function HomePage() {
       const [minPrice, maxPrice] = priceRange;
 
       return (
-        (search.toLowerCase() === '' ||
+        (search.toLowerCase() === "" ||
           motorcycle.make.toLowerCase().includes(search.toLowerCase()) ||
           motorcycle.model.toLowerCase().includes(search.toLowerCase())) &&
-        (make === 'all' || motorcycle.make === make) &&
-        (condition === 'all' || motorcycle.condition === condition) &&
-        (motorcycle.price >= minPrice && motorcycle.price <= maxPrice)
+        (make === "all" || motorcycle.make === make) &&
+        (condition === "all" || motorcycle.condition === condition) &&
+        motorcycle.price >= minPrice &&
+        motorcycle.price <= maxPrice
       );
     });
   }, [filters]);
 
   const sellSteps = [
     {
-      step: '01',
+      step: "01",
       icon: FileText,
-      title: 'Enter Bike Details',
-      description: 'Enter your bike details to get an instant estimated selling price.',
+      title: "Enter Bike Details",
+      description:
+        "Enter your bike details to get an instant estimated selling price.",
     },
     {
-      step: '02',
+      step: "02",
       icon: HomeIcon,
-      title: 'Book Inspection',
-      description: 'Book an appointment for vehicle inspection at home or at a MotaBhai branch.',
+      title: "Book Inspection",
+      description:
+        "Book an appointment for vehicle inspection at home or at a MotaBhai branch.",
     },
     {
-      step: '03',
+      step: "03",
       icon: IndianRupee,
-      title: 'Sell at Best Price',
-      description: 'Get the best price and get paid instantly. We also take care of the RC Transfer and insurance for free.',
-    }
+      title: "Sell at Best Price",
+      description:
+        "Get the best price and get paid instantly. We also take care of the RC Transfer and insurance for free.",
+    },
   ];
 
   return (
@@ -86,13 +100,20 @@ export default function HomePage() {
         <div className="split-hover-container">
           <div
             className="split-item left"
-            style={{ backgroundImage: "url('https://picsum.photos/seed/buybike/1200/800')" }}
+            style={{ backgroundImage: 'url("/buy.jpg")' }}
             data-ai-hint="motorcycle group"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Find Your Dream Bike</h2>
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">Looking to Buy?</h1>
-              <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">Explore our curated collection of certified pre-owned motorcycles.</p>
+              <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+                Find Your Dream Bike
+              </h2>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
+                Looking to Buy?
+              </h1>
+              <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
+                Explore our curated collection of certified pre-owned
+                motorcycles.
+              </p>
               <Button asChild size="lg" className="mt-8 w-full sm:w-auto">
                 <Link href="#browse-bikes">Browse Bikes</Link>
               </Button>
@@ -100,14 +121,25 @@ export default function HomePage() {
           </div>
           <div
             className="split-item right"
-            style={{ backgroundImage: "url('https://picsum.photos/seed/sellbike/1200/800')" }}
-             data-ai-hint="mechanic working"
+            style={{ backgroundImage: 'url("/sell.jpg")' }}
+            data-ai-hint="mechanic working"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-primary">USED TWO WHEELER - BUY & SELL ONLINE</h2>
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">Sell Your Bike</h1>
-              <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">Get the best price for your bike in just a few easy steps.</p>
-              <Button asChild size="lg" variant="secondary" className="mt-8 w-full sm:w-auto">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+                USED TWO WHEELER - BUY & SELL ONLINE
+              </h2>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
+                Sell Your Bike
+              </h1>
+              <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
+                Get the best price for your bike in just a few easy steps.
+              </p>
+              <Button
+                asChild
+                size="lg"
+                variant="secondary"
+                className="mt-8 w-full sm:w-auto"
+              >
                 <Link href="/sell">Sell Your Bike</Link>
               </Button>
             </div>
@@ -115,37 +147,80 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="py-16 my-12 bg-secondary/50 rounded-lg">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+            USED TWO WHEELER - BUY & SELL ONLINE
+          </h2>
+          <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">
+            Sell Your Bike in 3 Easy Steps
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 mt-12 max-w-5xl mx-auto">
+            {sellSteps.map((item) => (
+              <Card key={item.step} className="text-center">
+                <CardContent className="p-6">
+                  <div className="relative inline-block">
+                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm">
+                      {item.step}
+                    </div>
+                    <div className="bg-primary/10 text-primary rounded-full p-4 inline-block">
+                      <item.icon className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mt-4">{item.title}</h3>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button asChild size="lg" className="mt-12">
+            <Link href="/sell">Sell Your Bike</Link>
+          </Button>
+        </div>
+      </section>
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 text-center">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">What Our Customers Say</h2>
-            <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">Trusted by Riders Across Bihar</p>
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-              }}
-              className="w-full max-w-5xl mx-auto mt-12"
-            >
-              <CarouselContent>
-                {testimonials.map((testimonial) => (
-                  <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1">
-                      <TestimonialCard testimonial={testimonial} />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-[-50px] top-1/2 -translate-y-1/2" />
-              <CarouselNext className="right-[-50px] top-1/2 -translate-y-1/2" />
-            </Carousel>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+            What Our Customers Say
+          </h2>
+          <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">
+            Trusted by Riders Across Bihar
+          </p>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full max-w-5xl mx-auto mt-12"
+          >
+            <CarouselContent>
+              {testimonials.map((testimonial) => (
+                <CarouselItem
+                  key={testimonial.id}
+                  className="md:basis-1/2 lg:basis-1/3"
+                >
+                  <div className="p-1">
+                    <TestimonialCard testimonial={testimonial} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-[-50px] top-1/2 -translate-y-1/2" />
+            <CarouselNext className="right-[-50px] top-1/2 -translate-y-1/2" />
+          </Carousel>
         </div>
       </section>
 
       <div id="browse-bikes" className="container mx-auto px-4 py-8">
         <div className="text-center mb-12 pt-12">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Find Your Next Ride</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+            Find Your Next Ride
+          </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse our curated collection of high-quality, pre-owned motorcycles.
+            Browse our curated collection of high-quality, pre-owned
+            motorcycles.
           </p>
         </div>
 
@@ -156,37 +231,9 @@ export default function HomePage() {
           motorcycles={allMotorcycles}
         />
 
-        <section className="py-16 my-12 bg-secondary/50 rounded-lg">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">USED TWO WHEELER - BUY & SELL ONLINE</h2>
-            <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">Sell Your Bike in 3 Easy Steps</p>
-            <div className="grid md:grid-cols-3 gap-8 mt-12 max-w-5xl mx-auto">
-              {sellSteps.map((item) => (
-                <Card key={item.step} className="text-center">
-                  <CardContent className="p-6">
-                    <div className="relative inline-block">
-                      <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm">
-                        {item.step}
-                      </div>
-                      <div className="bg-primary/10 text-primary rounded-full p-4 inline-block">
-                        <item.icon className="w-8 h-8" />
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-semibold mt-4">{item.title}</h3>
-                    <p className="text-muted-foreground mt-2 text-sm">{item.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <Button asChild size="lg" className="mt-12">
-              <Link href="/sell">Sell Your Bike</Link>
-            </Button>
-          </div>
-        </section>
-
         {filteredMotorcycles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-            {filteredMotorcycles.map(motorcycle => (
+            {filteredMotorcycles.map((motorcycle) => (
               <MotorcycleCard key={motorcycle.id} motorcycle={motorcycle} />
             ))}
           </div>
@@ -196,7 +243,10 @@ export default function HomePage() {
             <p className="mt-2 text-muted-foreground">
               Try adjusting your filters or check back later.
             </p>
-            <button onClick={handleResetFilters} className="mt-4 text-primary hover:underline">
+            <button
+              onClick={handleResetFilters}
+              className="mt-4 text-primary hover:underline"
+            >
               Reset Filters
             </button>
           </div>
