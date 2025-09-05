@@ -2,13 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import type { ChangeEvent } from 'react';
-import { motorcycles as allMotorcycles } from '@/lib/data';
+import { motorcycles as allMotorcycles, testimonials } from '@/lib/data';
 import MotorcycleCard from '@/components/MotorcycleCard';
 import MotorcycleFilters, { type Filters } from '@/components/MotorcycleFilters';
+import TestimonialCard from '@/components/TestimonialCard';
 import type { Motorcycle } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { FileText, HomeIcon, IndianRupee } from 'lucide-react';
 import Image from 'next/image';
 import './split-hover.css';
@@ -110,6 +112,32 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4 text-center">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">What Our Customers Say</h2>
+            <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">Trusted by Riders Across Bihar</p>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full max-w-5xl mx-auto mt-12"
+            >
+              <CarouselContent>
+                {testimonials.map((testimonial) => (
+                  <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                      <TestimonialCard testimonial={testimonial} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-[-50px] top-1/2 -translate-y-1/2" />
+              <CarouselNext className="right-[-50px] top-1/2 -translate-y-1/2" />
+            </Carousel>
         </div>
       </section>
 

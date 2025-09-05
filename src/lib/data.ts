@@ -1,4 +1,4 @@
-import type { Motorcycle } from '@/lib/types';
+import type { Motorcycle, Testimonial } from '@/lib/types';
 
 export const motorcycles: Motorcycle[] = [
   {
@@ -92,3 +92,38 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
 ];
+
+export const testimonials: Testimonial[] = [
+    {
+      id: '1',
+      name: 'Rohan Kumar',
+      location: 'Muzaffarpur, Bihar',
+      review: 'Excellent service and a fantastic bike! The team at Mota Bhai Automobiles made the whole process smooth and transparent. I couldn\'t be happier with my Royal Enfield.',
+      rating: 5,
+      image: 'https://picsum.photos/seed/rohan/100/100',
+    },
+    {
+      id: '2',
+      name: 'Priya Sharma',
+      location: 'Patna, Bihar',
+      review: 'I sold my old bike and got a great price for it. The home inspection was convenient, and I got paid instantly. Highly recommend Mota Bhai for selling your bike!',
+      rating: 5,
+      image: 'https://picsum.photos/seed/priya/100/100',
+    },
+    {
+      id: '3',
+      name: 'Amit Singh',
+      location: 'Darbhanga, Bihar',
+      review: 'Found a well-maintained Pulsar at a very reasonable price. The staff was helpful and answered all my questions. A trustworthy place for second-hand bikes.',
+      rating: 4,
+      image: 'https://picsum.photos/seed/amit/100/100',
+    },
+    {
+      id: '4',
+      name: 'Sneha Gupta',
+      location: 'Muzaffarpur, Bihar',
+      review: 'The process of buying my first scooter was so easy here. They have a good collection and the prices are fair. I\'m very satisfied with my purchase.',
+      rating: 5,
+      image: 'https://picsum.photos/seed/sneha/100/100',
+    },
+  ];

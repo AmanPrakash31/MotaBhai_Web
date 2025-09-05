@@ -9,3 +9,12 @@ export interface Motorcycle {
   description: string;
   images: string[];
 }
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  location: string;
+  review: string;
+  rating: number;
+  image: string;
+}
