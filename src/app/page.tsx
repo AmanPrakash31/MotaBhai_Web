@@ -6,8 +6,12 @@ import { motorcycles as allMotorcycles } from '@/lib/data';
 import MotorcycleCard from '@/components/MotorcycleCard';
 import MotorcycleFilters, { type Filters } from '@/components/MotorcycleFilters';
 import type { Motorcycle } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { FileText, Home as HomeIcon, IndianRupee } from 'lucide-react';
 
-export default function Home() {
+export default function HomePage() {
   const [filters, setFilters] = useState<Filters>({
     search: '',
     make: 'all',
@@ -51,6 +55,27 @@ export default function Home() {
     });
   }, [filters]);
 
+  const sellSteps = [
+    {
+      step: '01',
+      icon: FileText,
+      title: 'Enter Bike Details',
+      description: 'Enter your bike details to get an instant estimated selling price.',
+    },
+    {
+      step: '02',
+      icon: HomeIcon,
+      title: 'Book Inspection',
+      description: 'Book an appointment for vehicle inspection at home or at a MotaBhai branch.',
+    },
+    {
+      step: '03',
+      icon: IndianRupee,
+      title: 'Sell at Best Price',
+      description: 'Get the best price and get paid instantly. We also take care of the RC Transfer and insurance for free.',
+    }
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-12">
@@ -66,6 +91,34 @@ export default function Home() {
         onReset={handleResetFilters}
         motorcycles={allMotorcycles}
       />
+
+      <section className="py-16 my-12 bg-secondary/50 rounded-lg">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-primary">USED TWO WHEELER - BUY & SELL ONLINE</h2>
+          <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">Sell Your Bike in 3 Easy Steps</p>
+          <div className="grid md:grid-cols-3 gap-8 mt-12 max-w-5xl mx-auto">
+            {sellSteps.map((item) => (
+              <Card key={item.step} className="text-center">
+                <CardContent className="p-6">
+                  <div className="relative inline-block">
+                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm">
+                      {item.step}
+                    </div>
+                    <div className="bg-primary/10 text-primary rounded-full p-4 inline-block">
+                      <item.icon className="w-8 h-8" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold mt-4">{item.title}</h3>
+                  <p className="text-muted-foreground mt-2 text-sm">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button asChild size="lg" className="mt-12">
+            <Link href="/sell">Sell Your Bike</Link>
+          </Button>
+        </div>
+      </section>
 
       {filteredMotorcycles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
