@@ -143,7 +143,7 @@ export default function HomePage() {
             data-ai-hint="mechanic working"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-accent-foreground">
                 USED TWO WHEELER - BUY & SELL ONLINE
               </h2>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
@@ -167,7 +167,7 @@ export default function HomePage() {
 
       <section className="py-16 my-12 bg-secondary/50 rounded-lg">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-accent-foreground">
             USED TWO WHEELER - BUY & SELL ONLINE
           </h2>
           <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">
