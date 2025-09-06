@@ -122,7 +122,7 @@ export default function HomePage() {
             data-ai-hint="motorcycle group"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-accent-foreground">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-500">
                 Find Your Dream Bike
               </h2>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
@@ -143,7 +143,7 @@ export default function HomePage() {
             data-ai-hint="mechanic working"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-accent-foreground">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-500">
                 USED TWO WHEELER - BUY & SELL ONLINE
               </h2>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
