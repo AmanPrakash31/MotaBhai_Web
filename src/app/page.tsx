@@ -19,7 +19,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { FileText, HomeIcon, IndianRupee } from "lucide-react";
+import { FileText, HomeIcon, IndianRupee, Star, ThumbsUp, Medal } from "lucide-react";
 import Image from "next/image";
 import "./split-hover.css";
 export default function HomePage() {
@@ -92,6 +92,24 @@ export default function HomePage() {
       description:
         "Get the best price and get paid instantly. We also take care of the RC Transfer and insurance for free.",
     },
+  ];
+
+  const whyChooseUsPoints = [
+      {
+        icon: Medal,
+        title: "Quality You Can Trust",
+        description: "Every bike undergoes a rigorous inspection to ensure it meets our high standards for performance and safety."
+      },
+      {
+        icon: ThumbsUp,
+        title: "Hassle-Free Experience",
+        description: "From transparent pricing to handling all paperwork like RC Transfer, we make buying or selling a bike seamless."
+      },
+      {
+        icon: Star,
+        title: "Trusted Local Dealer",
+        description: "As a proud local business in Muzaffarpur, we are committed to serving our community with honesty and integrity."
+      }
   ];
 
   return (
@@ -180,7 +198,48 @@ export default function HomePage() {
           </Button>
         </div>
       </section>
+
       <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
+                    Your Trusted Local Dealer
+                </h2>
+                <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">
+                    Why Choose Mota Bhai Automobiles?
+                </p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <Image 
+                        src="/shop-front.jpg"
+                        alt="Mota Bhai Automobiles shop front with staff"
+                        data-ai-hint="dealership team"
+                        width={600}
+                        height={450}
+                        className="rounded-lg shadow-xl w-full"
+                    />
+                </div>
+                <div className="space-y-8">
+                    {whyChooseUsPoints.map((point) => (
+                        <div key={point.title} className="flex gap-4">
+                           <div className="flex-shrink-0">
+                                <div className="bg-primary/10 text-primary rounded-full p-3">
+                                    <point.icon className="w-6 h-6" />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-semibold">{point.title}</h3>
+                                <p className="text-muted-foreground mt-1">{point.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-secondary/50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
             What Our Customers Say
@@ -255,3 +314,5 @@ export default function HomePage() {
     </>
   );
 }
+
+    
