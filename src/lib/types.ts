@@ -5,6 +5,8 @@ export interface Motorcycle {
   year: number;
   price: number;
   mileage: number;
+  engineDisplacement: number;
+  registration: string;
   condition: 'Excellent' | 'Good' | 'Fair' | 'Poor';
   description: string;
   images: string[];

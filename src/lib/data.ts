@@ -8,6 +8,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2020,
     price: 175000,
     mileage: 17580,
+    engineDisplacement: 349,
+    registration: 'BR 06',
     condition: 'Good',
     description: 'A well-maintained Royal Enfield Classic 350 from 2020. A reliable and stylish ride for the streets of Bihar.',
     images: [
@@ -23,6 +25,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2019,
     price: 140000,
     mileage: 19600,
+    engineDisplacement: 155,
+    registration: 'BR 01',
     condition: 'Good',
     description: 'A sporty Yamaha R15 from 2019. Perfect for those who love performance and style. Ready for a new owner in Muzaffarpur.',
     images: [
@@ -38,6 +42,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2023,
     price: 130000,
     mileage: 12066,
+    engineDisplacement: 160,
+    registration: 'BR 31',
     condition: 'Excellent',
     description: 'A nearly new Bajaj N160 from 2023. Low mileage and in excellent condition. Great value for a modern bike.',
     images: [
@@ -53,6 +59,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2020,
     price: 105000,
     mileage: 15666,
+    engineDisplacement: 160,
+    registration: 'BR 06',
     condition: 'Good',
     description: 'The powerful Bajaj NS160 from 2020. A great combination of power and agility. Has been kept in good condition.',
     images: [
@@ -68,6 +76,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2019,
     price: 75000,
     mileage: 18000,
+    engineDisplacement: 125,
+    registration: 'BR 31',
     condition: 'Good',
     description: 'A stylish and reliable Hero Glamour from 2019. Known for its solid performance and fuel efficiency.',
     images: [
@@ -83,6 +93,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2019,
     price: 80000,
     mileage: 20222,
+    engineDisplacement: 125,
+    registration: 'BR 01',
     condition: 'Good',
     description: 'A 2019 Bajaj Pulsar 125, the perfect entry into the Pulsar family. Balances performance with everyday usability.',
     images: [
@@ -98,6 +110,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2020,
     price: 60000,
     mileage: 17855,
+    engineDisplacement: 110,
+    registration: 'BR 06',
     condition: 'Good',
     description: 'A 2020 Hero Pleasure scooter, perfect for city commuting. Easy to handle and very fuel-efficient.',
     images: [
@@ -113,6 +127,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2023,
     price: 190000,
     mileage: 7852,
+    engineDisplacement: 350,
+    registration: 'BR 31',
     condition: 'Excellent',
     description: 'A modern and stylish 2023 Royal Enfield Hunter 350. Great for navigating city streets with ease.',
     images: [
@@ -128,6 +144,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2021,
     price: 135000,
     mileage: 21055,
+    engineDisplacement: 200,
+    registration: 'DTO 05',
     condition: 'Good',
     description: 'The thrilling TVS Apache RTR 200 from 2021. A performance machine that is sure to excite. Well-maintained.',
     images: [
@@ -143,6 +161,8 @@ export const motorcycles: Motorcycle[] = [
     year: 2023,
     price: 70000,
     mileage: 3455,
+    engineDisplacement: 125,
+    registration: 'BR 06',
     condition: 'Excellent',
     description: 'A 2023 Hero Splendor with very low mileage. The king of commuters, offering unmatched reliability and economy.',
     images: [

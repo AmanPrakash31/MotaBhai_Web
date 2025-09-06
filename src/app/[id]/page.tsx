@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Gauge, ShieldCheck, Tag, Wrench } from 'lucide-react';
+import { Calendar, Gauge, ShieldCheck, Tag, Wrench, DraftingCompass, MapPin } from 'lucide-react';
 
 export function generateStaticParams() {
   return motorcycles.map((motorcycle) => ({
@@ -31,6 +31,8 @@ export default function MotorcycleDetailPage({ params }: { params: { id: string 
   const specItems = [
     { icon: Calendar, label: 'Year', value: motorcycle.year },
     { icon: Gauge, label: 'Mileage', value: `${motorcycle.mileage.toLocaleString('en-IN')} km` },
+    { icon: DraftingCompass, label: 'Engine', value: `${motorcycle.engineDisplacement} CC` },
+    { icon: MapPin, label: 'Registration', value: motorcycle.registration },
     { icon: ShieldCheck, label: 'Condition', value: motorcycle.condition },
     { icon: Tag, label: 'Price', value: formatter.format(motorcycle.price) },
   ];
