@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 20 14.3% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
-    --primary: 0 65% 45%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 35 91% 94%;
-    --secondary-foreground: 35 92% 35%;
+    --background: 0 0% 99%; /* #fdfdfd */
+    --foreground: 120 1% 22%; /* #373837 */
+    --card: 0 0% 99%; /* #fdfdfd */
+    --card-foreground: 120 1% 22%; /* #373837 */
+    --popover: 0 0% 99%; /* #fdfdfd */
+    --popover-foreground: 120 1% 22%; /* #373837 */
+    --primary: 352 78% 28%; /* #81101c */
+    --primary-foreground: 0 0% 99%; /* #fdfdfd */
+    --secondary: 30 79% 90%; /* Lighter version of #e48e20 for background */
+    --secondary-foreground: 30 79% 30%; /* Darker version of #e48e20 for text */
     --muted: 60 4.8% 95.9%;
     --muted-foreground: 25 5.3% 44.7%;
-    --accent: 35 91% 94%;
-    --accent-foreground: 35 92% 35%;
+    --accent: 39 97% 90%; /* Lighter version of #e79c03 for background */
+    --accent-foreground: 39 97% 25%; /* Darker version of #e79c03 for text */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 0 65% 45%;
+    --ring: 352 78% 28%; /* #81101c */
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 0 0% 98%;
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 0 0% 98%;
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 65% 45%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 35 92% 15%;
-    --secondary-foreground: 35 91% 94%;
+    --background: 120 1% 22%; /* #373837 */
+    --foreground: 0 0% 99%; /* #fdfdfd */
+    --card: 120 1% 25%; /* Slightly lighter than background */
+    --card-foreground: 0 0% 99%; /* #fdfdfd */
+    --popover: 120 1% 22%; /* #373837 */
+    --popover-foreground: 0 0% 99%; /* #fdfdfd */
+    --primary: 352 78% 38%; /* Brighter red for dark mode */
+    --primary-foreground: 0 0% 99%; /* #fdfdfd */
+    --secondary: 30 79% 20%; /* Darker orange for dark mode background */
+    --secondary-foreground: 30 79% 80%; /* Lighter orange for dark mode text */
     --muted: 12 6.5% 15.1%;
     --muted-foreground: 24 5.4% 63.9%;
-    --accent: 12 6.5% 15.1%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 39 97% 20%; /* Darker gold for dark mode background */
+    --accent-foreground: 39 97% 70%; /* Lighter gold for dark mode text */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 12 6.5% 15.1%;
     --input: 12 6.5% 15.1%;
-    --ring: 0 65% 45%;
+    --ring: 352 78% 38%;
   }
 }
 
