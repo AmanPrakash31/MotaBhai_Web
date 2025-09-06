@@ -18,7 +18,7 @@ export interface Filters {
 
 interface MotorcycleFiltersProps {
   filters: Filters;
-  onFilterChange: (key: keyof Filters, value: string | number | number[] | ChangeE_vent<HTMLInputElement>) => void;
+  onFilterChange: (key: keyof Filters, value: string | number | number[] | ChangeEvent<HTMLInputElement>) => void;
   onReset: () => void;
   motorcycles: Motorcycle[];
 }
