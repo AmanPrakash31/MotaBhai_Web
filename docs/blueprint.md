@@ -1,4 +1,4 @@
-# **App Name**: Mota Bhai Bikes
+# **App Name**: Mota Bhai Automobiles
 
 ## Core Features:
 
