@@ -122,7 +122,7 @@ export default function HomePage() {
             data-ai-hint="motorcycle group"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-secondary-foreground">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-accent-foreground">
                 Find Your Dream Bike
               </h2>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
