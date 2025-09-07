@@ -2,6 +2,7 @@
 
 import { suggestListingPrice, type SuggestListingPriceInput, type SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
 import { z } from 'zod';
+import nodemailer from 'nodemailer';
 
 const ActionInputSchema = z.object({
   make: z.string().min(2, "Make is required"),
@@ -23,7 +24,6 @@ export async function getSuggestedPrice(data: unknown): Promise<{ success: boole
     return { success: true, data: result };
   } catch (error) {
     console.error('AI Price Suggestion Error:', error);
-    // This could be a more user-friendly error message.
     return { success: false, error: 'An unexpected error occurred while contacting the AI.' };
   }
 }
@@ -60,45 +60,50 @@ export async function submitListing(formData: FormData): Promise<{ success: bool
   }
 
   const { make, model, year, mileage, condition, description, price, images } = validation.data;
+  
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_SERVER_USER,
+      pass: process.env.EMAIL_SERVER_PASSWORD,
+    },
+  });
 
   try {
-    // TODO: Implement your email sending logic here.
-    // You can use a service like Nodemailer, SendGrid, or Resend.
-    // Example using a fictional email service:
-    /*
-    
-    import { sendEmail } from '@/lib/email'; // This is a fictional module
-
     const emailHtml = `
-      <h1>New Motorcycle Listing</h1>
-      <p><strong>Make:</strong> ${make}</p>
-      <p><strong>Model:</strong> ${model}</p>
-      <p><strong>Year:</strong> ${year}</p>
-      <p><strong>Mileage:</strong> ${mileage} km</p>
-      <p><strong>Condition:</strong> ${condition}</p>
-      <p><strong>Price:</strong> ₹${price}</p>
-      <p><strong>Description:</strong> ${description}</p>
+      <h1>New Motorcycle Listing Submission</h1>
+      <p>A new motorcycle has been submitted for listing on the website. Please review the details below.</p>
+      <h2>Motorcycle Details</h2>
+      <ul>
+        <li><strong>Make:</strong> ${make}</li>
+        <li><strong>Model:</strong> ${model}</li>
+        <li><strong>Year:</strong> ${year}</li>
+        <li><strong>Mileage:</strong> ${mileage} km</li>
+        <li><strong>Condition:</strong> ${condition}</li>
+        <li><strong>Asking Price:</strong> ₹${price}</li>
+      </ul>
+      <h2>Description</h2>
+      <p>${description}</p>
+      <p>The uploaded images are attached to this email.</p>
     `;
-
+    
     const attachments = await Promise.all(images.map(async (file) => ({
       filename: file.name,
       content: Buffer.from(await file.arrayBuffer()),
+      contentType: file.type,
     })));
 
-    await sendEmail({
-      to: 'motabhaiautomobile@gmail.com',
-      subject: `New Listing: ${make} ${model}`,
+    await transporter.sendMail({
+      from: `"Mota Bhai Website" <${process.env.EMAIL_SERVER_USER}>`,
+      to: process.env.EMAIL_TO,
+      subject: `New Bike Listing: ${year} ${make} ${model}`,
       html: emailHtml,
       attachments: attachments,
     });
-    */
     
-    console.log('Form data processed and ready to be sent via email:', validation.data);
-
-
     return { success: true };
   } catch (error) {
-    console.error('Listing Submission Error:', error);
-    return { success: false, error: 'An unexpected error occurred while submitting the listing.' };
+    console.error('Listing Submission/Email Error:', error);
+    return { success: false, error: 'An unexpected error occurred while submitting the listing. Please try again later.' };
   }
 }
