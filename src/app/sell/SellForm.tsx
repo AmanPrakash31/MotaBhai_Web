@@ -27,7 +27,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getSuggestedPrice } from './actions';
+import { getSuggestedPrice, submitListing } from './actions';
 import { Loader2, Wand2 } from 'lucide-react';
 import type { SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
 
@@ -40,11 +40,12 @@ const formSchema = z.object({
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(20, "Description must be at least 20 characters.").max(500, "Description cannot exceed 500 characters."),
   price: z.coerce.number().min(1, "Please enter a valid price."),
-  images: z.any().optional(),
+  images: z.custom<FileList>().refine((files) => files?.length > 0, 'At least one image is required.'),
 });
 
 export default function SellForm() {
   const [isAiPending, startAiTransition] = useTransition();
+  const [isSubmitPending, startSubmitTransition] = useTransition();
   const [suggestion, setSuggestion] = useState<SuggestListingPriceOutput | null>(null);
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
   const { toast } = useToast();
@@ -62,12 +63,36 @@ export default function SellForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Listing Submitted!",
-      description: "Your motorcycle has been submitted for review.",
+    startSubmitTransition(async () => {
+      const formData = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+        if (key === 'images') {
+          if (value) {
+            Array.from(value).forEach((file: File) => {
+              formData.append('images', file);
+            });
+          }
+        } else {
+          formData.append(key, String(value));
+        }
+      });
+
+      const result = await submitListing(formData);
+
+      if (result.success) {
+        toast({
+          title: "Listing Submitted!",
+          description: "Your motorcycle has been submitted for review. We'll be in touch.",
+        });
+        form.reset();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Submission Error',
+          description: result.error || 'Could not submit your listing.',
+        });
+      }
     });
-    form.reset();
   }
 
   const handleSuggestPrice = () => {
@@ -97,6 +122,8 @@ export default function SellForm() {
       }
     });
   };
+  
+  const fileRef = form.register("images");
 
   const formatter = new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -181,13 +208,16 @@ export default function SellForm() {
               <FormField control={form.control} name="images" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Upload Images</FormLabel>
-                  <FormControl><Input type="file" multiple {...field} /></FormControl>
+                  <FormControl><Input type="file" multiple {...fileRef} /></FormControl>
                   <FormDescription>High-quality images help your listing sell faster.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
               
-              <Button type="submit" size="lg" className="w-full">Submit Listing</Button>
+              <Button type="submit" size="lg" className="w-full" disabled={isSubmitPending}>
+                {isSubmitPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Submit Listing
+              </Button>
             </form>
           </Form>
         </CardContent>
