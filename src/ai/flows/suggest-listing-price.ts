@@ -20,7 +20,7 @@ const SuggestListingPriceInputSchema = z.object({
     .describe(
       'The condition of the motorcycle (e.g., excellent, good, fair, poor).' // TODO: enum
     ),
-  mileage: z.number().describe('The mileage of the motorcycle.'),
+  kmDriven: z.number().describe('The kilometers driven of the motorcycle.'),
 });
 export type SuggestListingPriceInput = z.infer<typeof SuggestListingPriceInputSchema>;
 
@@ -45,14 +45,14 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestListingPriceInputSchema},
   output: {schema: SuggestListingPriceOutputSchema},
   prompt: `You are an expert in motorcycle valuation. Based on the
-  make, model, year, condition, and mileage of the motorcycle, suggest a
+  make, model, year, condition, and KM driven of the motorcycle, suggest a
   fair listing price. Also, provide a brief explanation of your reasoning.
 
   Make: {{{make}}}
   Model: {{{model}}}
   Year: {{{year}}}
   Condition: {{{condition}}}
-  Mileage: {{{mileage}}}
+  KM driven: {{{kmDriven}}}
   `,
 });
 

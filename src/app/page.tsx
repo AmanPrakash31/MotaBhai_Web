@@ -173,7 +173,7 @@ export default function HomePage() {
 
       <section className="py-16 my-12 bg-secondary/50 rounded-lg">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-accent-foreground">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-300">
             USED TWO WHEELER - BUY & SELL ONLINE
           </h2>
           <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">
@@ -261,7 +261,7 @@ export default function HomePage() {
               align: "start",
               loop: true,
             }}
-            className="w-full max-w-5xl mx-auto mt-12 relative"
+            className="w-full max-w-4xl mx-auto mt-12 relative"
           >
             <CarouselContent className="-ml-4">
               {testimonials.map((testimonial) => (
@@ -275,8 +275,8 @@ export default function HomePage() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2 z-10 md:left-[-2.5rem]" />
-            <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2 z-10 md:right-[-2.5rem]" />
+             <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2 z-10 md:left-[-2rem]" />
+             <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2 z-10 md:right-[-2rem]" />
           </Carousel>
         </div>
       </section>

@@ -41,7 +41,7 @@ export default function MotorcycleCard({ motorcycle }: { motorcycle: Motorcycle 
             </div>
             <div className="flex items-center gap-1.5">
               <Gauge className="w-4 h-4" />
-              <span>{motorcycle.mileage.toLocaleString('en-IN')} km</span>
+              <span>{motorcycle.kmDriven.toLocaleString('en-IN')} km</span>
             </div>
           </div>
           <div className="mt-4 flex-grow" />

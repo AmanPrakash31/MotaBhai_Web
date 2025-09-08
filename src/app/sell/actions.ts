@@ -8,7 +8,7 @@ const ActionInputSchema = z.object({
   model: z.string().min(1, "Model is required"),
   year: z.coerce.number().min(1900).max(new Date().getFullYear() + 1),
   condition: z.string().min(1, "Condition is required"),
-  mileage: z.coerce.number().min(0),
+  kmDriven: z.coerce.number().min(0),
 });
 
 export async function getSuggestedPrice(data: unknown): Promise<{ success: boolean; data?: SuggestListingPriceOutput; error?: string }> {

@@ -40,7 +40,7 @@ const formSchema = z.object({
   make: z.string().min(2, "Make must be at least 2 characters."),
   model: z.string().min(1, "Model is required."),
   year: z.coerce.number().min(1900, "Please enter a valid year.").max(new Date().getFullYear() + 1, "Year cannot be in the future."),
-  mileage: z.coerce.number().min(0, "Mileage must be a positive number."),
+  kmDriven: z.coerce.number().min(0, "KM driven must be a positive number."),
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(20, "Description must be at least 20 characters.").max(500, "Description cannot exceed 500 characters."),
   price: z.coerce.number().min(1, "Please enter a valid price."),
@@ -64,7 +64,7 @@ export default function SellForm() {
       make: '',
       model: '',
       year: undefined,
-      mileage: undefined,
+      kmDriven: undefined,
       description: '',
       price: undefined,
     },
@@ -108,19 +108,19 @@ export default function SellForm() {
 
   const handleSuggestPrice = () => {
     const values = form.getValues();
-    const { make, model, year, mileage, condition } = values;
+    const { make, model, year, kmDriven, condition } = values;
 
-    if (!make || !model || !year || mileage === undefined || !condition) {
+    if (!make || !model || !year || kmDriven === undefined || !condition) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
-        description: 'Please fill out Make, Model, Year, Mileage, and Condition to get a price suggestion.',
+        description: 'Please fill out Make, Model, Year, KM driven, and Condition to get a price suggestion.',
       });
       return;
     }
     
     startAiTransition(async () => {
-      const result = await getSuggestedPrice({ make, model, year, mileage, condition });
+      const result = await getSuggestedPrice({ make, model, year, kmDriven, condition });
       if (result.success && result.data) {
         setSuggestion(result.data);
         setIsSuggestionOpen(true);
@@ -203,9 +203,9 @@ export default function SellForm() {
                             <FormMessage />
                           </FormItem>
                         )} />
-                        <FormField control={form.control} name="mileage" render={({ field }) => (
+                        <FormField control={form.control} name="kmDriven" render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Mileage (in km)</FormLabel>
+                            <FormLabel>KM driven</FormLabel>
                             <FormControl><Input type="number" placeholder="e.g., 8500" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>

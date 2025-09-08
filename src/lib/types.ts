@@ -4,7 +4,7 @@ export interface Motorcycle {
   model: string;
   year: number;
   price: number;
-  mileage: number;
+  kmDriven: number;
   engineDisplacement: number;
   registration: string;
   condition: 'Excellent' | 'Good' | 'Fair' | 'Poor';
