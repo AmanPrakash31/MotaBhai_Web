@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +34,9 @@ import type { SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price
 
 
 const formSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  phone: z.string().min(10, "Please enter a valid 10-digit phone number.").max(15, "Phone number is too long."),
+  location: z.string().min(2, "Location must be at least 2 characters."),
   make: z.string().min(2, "Make must be at least 2 characters."),
   model: z.string().min(1, "Model is required."),
   year: z.coerce.number().min(1900, "Please enter a valid year.").max(new Date().getFullYear() + 1, "Year cannot be in the future."),
@@ -41,7 +44,7 @@ const formSchema = z.object({
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(20, "Description must be at least 20 characters.").max(500, "Description cannot exceed 500 characters."),
   price: z.coerce.number().min(1, "Please enter a valid price."),
-  images: z.custom<FileList>().refine((files) => files?.length > 0, 'At least one image is required.'),
+  images: z.custom<FileList>().optional(),
 });
 
 export default function SellForm() {
@@ -55,6 +58,9 @@ export default function SellForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: '',
+      phone: '',
+      location: '',
       make: '',
       model: '',
       year: undefined,
@@ -142,87 +148,121 @@ export default function SellForm() {
         <CardContent className="p-8">
           <Form {...form}>
             <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormField control={form.control} name="make" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Make</FormLabel>
-                    <FormControl><Input placeholder="e.g., Royal Enfield" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="model" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model</FormLabel>
-                    <FormControl><Input placeholder="e.g., Classic 350" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="year" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Year</FormLabel>
-                    <FormControl><Input type="number" placeholder="e.g., 2021" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="mileage" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mileage (in km)</FormLabel>
-                    <FormControl><Input type="number" placeholder="e.g., 8500" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="condition" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Condition</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select condition" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {['Excellent', 'Good', 'Fair', 'Poor'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="price" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Your Listing Price (in ₹)</FormLabel>
-                    <FormControl><Input type="number" placeholder="e.g., 180000" {...field} /></FormControl>
-                    <FormDescription>Enter your desired selling price in INR.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
+                <div className="space-y-4">
+                    <CardHeader className="p-0 mb-4">
+                        <CardTitle>Your Contact Details</CardTitle>
+                    </CardHeader>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormField control={form.control} name="name" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Full Name</FormLabel>
+                                <FormControl><Input placeholder="e.g., Rohan Kumar" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="phone" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl><Input type="tel" placeholder="e.g., 9876543210" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="location" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Your Location</FormLabel>
+                                <FormControl><Input placeholder="e.g., Muzaffarpur" {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                    </div>
+                </div>
 
-              <Button type="button" variant="outline" onClick={handleSuggestPrice} disabled={isAiPending}>
-                {isAiPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Wand2 className="mr-2 h-4 w-4" />
-                )}
-                Suggest a Price with AI
-              </Button>
+                <div className="space-y-4 pt-4 border-t">
+                    <CardHeader className="p-0 mb-4">
+                        <CardTitle>Motorcycle Details</CardTitle>
+                    </CardHeader>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormField control={form.control} name="make" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Make</FormLabel>
+                            <FormControl><Input placeholder="e.g., Royal Enfield" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="model" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Model</FormLabel>
+                            <FormControl><Input placeholder="e.g., Classic 350" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="year" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Year</FormLabel>
+                            <FormControl><Input type="number" placeholder="e.g., 2021" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="mileage" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Mileage (in km)</FormLabel>
+                            <FormControl><Input type="number" placeholder="e.g., 8500" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="condition" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Condition</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Select condition" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                {['Excellent', 'Good', 'Fair', 'Poor'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField control={form.control} name="price" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your Listing Price (in ₹)</FormLabel>
+                            <FormControl><Input type="number" placeholder="e.g., 180000" {...field} /></FormControl>
+                            <FormDescription>Enter your desired selling price in INR.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                    </div>
+                </div>
+
+                <Button type="button" variant="outline" onClick={handleSuggestPrice} disabled={isAiPending}>
+                    {isAiPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    )}
+                    Suggest a Price with AI
+                </Button>
               
-              <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl><Textarea placeholder="Tell us about your motorcycle..." {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+                <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl><Textarea placeholder="Tell us about your motorcycle..." {...field} /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )} />
               
-              <FormField control={form.control} name="images" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Upload Images</FormLabel>
-                  <FormControl><Input type="file" multiple {...fileRef} /></FormControl>
-                  <FormDescription>High-quality images help your listing sell faster. Attachments are not supported by EmailJS on the free plan.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )} />
+                <FormField control={form.control} name="images" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Upload Images (Optional)</FormLabel>
+                    <FormControl><Input type="file" multiple {...fileRef} /></FormControl>
+                    <FormDescription>High-quality images help your listing sell faster. Attachments are not supported by EmailJS on the free plan.</FormDescription>
+                    <FormMessage />
+                    </FormItem>
+                )} />
               
-              <Button type="submit" size="lg" className="w-full" disabled={isSubmitPending}>
-                {isSubmitPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Submit Listing
-              </Button>
+                <Button type="submit" size="lg" className="w-full" disabled={isSubmitPending}>
+                    {isSubmitPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Submit Listing
+                </Button>
             </form>
           </Form>
         </CardContent>
