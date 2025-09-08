@@ -122,7 +122,7 @@ export default function HomePage() {
             data-ai-hint="motorcycle group"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-500">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-300">
                 Find Your Dream Bike
               </h2>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
@@ -143,7 +143,7 @@ export default function HomePage() {
             data-ai-hint="mechanic working"
           >
             <div className="split-content">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-500">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-300">
                 USED TWO WHEELER - BUY & SELL ONLINE
               </h2>
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mt-2">
@@ -212,7 +212,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
                     <Image 
-                        src="/shop-front.jpg"
+                        src="/logo.png"
                         alt="Mota Bhai Automobiles shop front with staff"
                         data-ai-hint="dealership team"
                         width={600}
@@ -266,8 +266,8 @@ export default function HomePage() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-[-50px] top-1/2 -translate-y-1/2" />
-            <CarouselNext className="right-[-50px] top-1/2 -translate-y-1/2" />
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 md:left-[-50px]" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 md:right-[-50px]" />
           </Carousel>
         </div>
       </section>
