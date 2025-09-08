@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { motorcycles as allMotorcycles, testimonials } from "@/lib/data";
 import MotorcycleCard from "@/components/MotorcycleCard";
@@ -22,6 +22,8 @@ import {
 import { FileText, HomeIcon, IndianRupee, Star, ThumbsUp, Medal } from "lucide-react";
 import Image from "next/image";
 import "./split-hover.css";
+import Autoplay from "embla-carousel-autoplay";
+
 export default function HomePage() {
   const [filters, setFilters] = useState<Filters>({
     search: "",
@@ -111,6 +113,10 @@ export default function HomePage() {
         description: "As a proud local business in Muzaffarpur, we are committed to serving our community with honesty and integrity."
       }
   ];
+
+  const plugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   return (
     <>
@@ -248,26 +254,29 @@ export default function HomePage() {
             Trusted by Riders Across Bihar
           </p>
           <Carousel
+            plugins={[plugin.current]}
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
             opts={{
               align: "start",
               loop: true,
             }}
-            className="w-full max-w-5xl mx-auto mt-12"
+            className="w-full max-w-5xl mx-auto mt-12 relative"
           >
-            <CarouselContent>
+            <CarouselContent className="-ml-4">
               {testimonials.map((testimonial) => (
                 <CarouselItem
                   key={testimonial.id}
-                  className="md:basis-1/2 lg:basis-1/3"
+                  className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3"
                 >
-                  <div className="p-1">
+                  <div className="p-1 h-full">
                     <TestimonialCard testimonial={testimonial} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 z-10 md:left-[-50px]" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 z-10 md:right-[-50px]" />
+            <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2 z-10 md:left-[-2.5rem]" />
+            <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2 z-10 md:right-[-2.5rem]" />
           </Carousel>
         </div>
       </section>
@@ -314,5 +323,3 @@ export default function HomePage() {
     </>
   );
 }
-
-    
