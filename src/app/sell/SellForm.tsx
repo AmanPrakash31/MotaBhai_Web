@@ -3,7 +3,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -27,7 +28,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getSuggestedPrice, submitListing } from './actions';
+import { getSuggestedPrice } from './actions';
 import { Loader2, Wand2 } from 'lucide-react';
 import type { SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
 
@@ -49,47 +50,51 @@ export default function SellForm() {
   const [suggestion, setSuggestion] = useState<SuggestListingPriceOutput | null>(null);
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       make: '',
       model: '',
-      year: '' as any,
-      mileage: '' as any,
+      year: undefined,
+      mileage: undefined,
       description: '',
-      price: '' as any,
+      price: undefined,
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     startSubmitTransition(async () => {
-      const formData = new FormData();
-      Object.entries(values).forEach(([key, value]) => {
-        if (key === 'images') {
-          if (value) {
-            Array.from(value).forEach((file: File) => {
-              formData.append('images', file);
-            });
-          }
-        } else {
-          formData.append(key, String(value));
-        }
-      });
+      
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+      
+      if (!serviceId || !templateId || !publicKey) {
+          toast({
+              variant: 'destructive',
+              title: 'Configuration Error',
+              description: 'EmailJS is not configured. Please add credentials to the .env file.',
+          });
+          return;
+      }
+      
+      if (!formRef.current) return;
 
-      const result = await submitListing(formData);
-
-      if (result.success) {
+      try {
+        await emailjs.sendForm(serviceId, templateId, formRef.current, publicKey);
         toast({
           title: "Listing Submitted!",
           description: "Your motorcycle has been submitted for review. We'll be in touch.",
         });
         form.reset();
-      } else {
+      } catch (error) {
+        console.error('EmailJS Error:', error);
         toast({
           variant: 'destructive',
           title: 'Submission Error',
-          description: result.error || 'Could not submit your listing.',
+          description: 'Could not submit your listing via EmailJS.',
         });
       }
     });
@@ -136,7 +141,7 @@ export default function SellForm() {
       <Card>
         <CardContent className="p-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <FormField control={form.control} name="make" render={({ field }) => (
                   <FormItem>
@@ -209,7 +214,7 @@ export default function SellForm() {
                 <FormItem>
                   <FormLabel>Upload Images</FormLabel>
                   <FormControl><Input type="file" multiple {...fileRef} /></FormControl>
-                  <FormDescription>High-quality images help your listing sell faster.</FormDescription>
+                  <FormDescription>High-quality images help your listing sell faster. Attachments are not supported by EmailJS on the free plan.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
