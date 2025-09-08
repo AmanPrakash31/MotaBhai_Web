@@ -218,7 +218,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div>
                     <Image 
-                        src="/logo.png"
+                        src="/shop-front.jpg"
                         alt="Mota Bhai Automobiles shop front with staff"
                         data-ai-hint="dealership team"
                         width={600}
