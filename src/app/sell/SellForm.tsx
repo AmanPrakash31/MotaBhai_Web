@@ -55,10 +55,10 @@ export default function SellForm() {
     defaultValues: {
       make: '',
       model: '',
-      year: undefined,
-      mileage: undefined,
+      year: '' as any,
+      mileage: '' as any,
       description: '',
-      price: undefined,
+      price: '' as any,
     },
   });
 
