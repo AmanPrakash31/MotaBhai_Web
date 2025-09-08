@@ -87,7 +87,7 @@ export async function submitListing(formData: FormData): Promise<{ success: bool
       <p>The uploaded images are attached to this email.</p>
     `;
     
-    const attachments = await Promise.all(images.map(async (file) => ({
+    const attachments = await Promise.all(images.map(async (file: File) => ({
       filename: file.name,
       content: Buffer.from(await file.arrayBuffer()),
       contentType: file.type,
