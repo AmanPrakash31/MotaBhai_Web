@@ -59,7 +59,7 @@ const testimonialSchema = z.object({
 
 const TestimonialRowImage = ({ src, alt }: { src: string, alt: string }) => {
   const [imageSrc, setImageSrc] = useState(src);
-  const handleError = () => setImageSrc('https://picsum.photos/seed/placeholder-user/100/100');
+  const handleError = () => setImageSrc('/user-placeholder.png');
 
   return (
     <Image 
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
         motorcycleForm.reset(defaultValues as any);
     }
     if (type === 'testimonial') {
-        const defaultValues = mode === 'edit' && data ? data : { rating: 5, image: 'https://picsum.photos/seed/new-user/100/100' };
+        const defaultValues = mode === 'edit' && data ? data : { rating: 5, image: '/user-placeholder.png' };
         testimonialForm.reset(defaultValues as any);
     }
   };

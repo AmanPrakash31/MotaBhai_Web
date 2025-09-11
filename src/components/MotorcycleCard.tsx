@@ -11,10 +11,10 @@ import { ArrowRight, Gauge, Calendar } from 'lucide-react';
 import { Button } from './ui/button';
 
 export default function MotorcycleCard({ motorcycle }: { motorcycle: Motorcycle }) {
-  const [imageSrc, setImageSrc] = useState(motorcycle.images[0] || '/logo.png');
+  const [imageSrc, setImageSrc] = useState(motorcycle.images[0] || '/Bike_placeholder.jpg');
 
   const handleImageError = () => {
-    setImageSrc('/logo.png');
+    setImageSrc('/Bike_placeholder.jpg');
   };
   
   const formatter = new Intl.NumberFormat('en-IN', {
