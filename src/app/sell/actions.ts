@@ -5,6 +5,7 @@ import { suggestListingPrice, type SuggestListingPriceInput, type SuggestListing
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { listingSubmissions } from '@/lib/db/schema';
+import { redirect } from 'next/navigation';
 
 
 const ActionInputSchema = z.object({
@@ -48,8 +49,10 @@ const SubmitListingSchema = z.object({
 });
 
 
-export async function submitListing(data: unknown): Promise<{ success: boolean; error?: string }> {
-    const validation = SubmitListingSchema.safeParse(data);
+export async function submitListing(formData: FormData): Promise<{ success: boolean; error?: string, newSubmission?: any }> {
+    const rawData = Object.fromEntries(formData.entries());
+    const validation = SubmitListingSchema.safeParse(rawData);
+
     if (!validation.success) {
       const errorMessages = validation.error.issues.map(issue => issue.message).join(', ');
       console.error("Validation failed:", errorMessages);
@@ -59,16 +62,26 @@ export async function submitListing(data: unknown): Promise<{ success: boolean; 
     const { images, ...submissionData } = validation.data;
     
     try {
-        await db.insert(listingSubmissions).values({
+        const newSubmissions = await db.insert(listingSubmissions).values({
             ...submissionData
             // Note: Image files are not being saved.
-            // The emailjs logic will handle notifications with attachments if configured.
+        }).returning({
+            id: listingSubmissions.id,
+            submittedAt: listingSubmissions.submittedAt
         });
 
-        return { success: true };
+        if (newSubmissions.length > 0) {
+          return { success: true, newSubmission: newSubmissions[0] };
+        } else {
+          return { success: false, error: 'Failed to retrieve new submission details.' };
+        }
 
     } catch (error) {
         console.error("Database insertion error:", error);
         return { success: false, error: 'Failed to save the listing submission to the database.' };
     }
+}
+
+export async function navigateToSuccess() {
+  redirect('/sell/success');
 }

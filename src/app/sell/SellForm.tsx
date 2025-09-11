@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getSuggestedPrice, submitListing } from './actions';
+import { getSuggestedPrice, submitListing, navigateToSuccess } from './actions';
 import { Loader2, Wand2 } from 'lucide-react';
 import type { SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
 
@@ -90,38 +90,47 @@ export default function SellForm() {
     },
   });
 
+  const sendEmail = async (submissionDetails: object) => {
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+      
+      if (serviceId && templateId && publicKey) {
+        try {
+          await emailjs.send(serviceId, templateId, submissionDetails, publicKey);
+          console.log('Submission email sent via EmailJS.');
+        } catch (error) {
+          console.error('EmailJS Error:', error);
+        }
+      }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     startSubmitTransition(async () => {
-      
-      const result = await submitListing(values);
-      if (result.success) {
-        toast({
-          title: "Listing Submitted!",
-          description:
-            "Your motorcycle has been submitted for review. We'll be in touch.",
-        });
-        form.reset();
+      if (!formRef.current) return;
+
+      const formData = new FormData(formRef.current);
+      const result = await submitListing(formData);
+
+      if (result.success && result.newSubmission) {
+        
+        // Combine form values with new submission details for the email
+        const emailParams = {
+            ...values,
+            ...result.newSubmission,
+            submittedAt: new Date(result.newSubmission.submittedAt).toLocaleString(),
+        };
+
+        await sendEmail(emailParams);
+        
+        await navigateToSuccess();
+
       } else {
         toast({
             variant: 'destructive',
             title: 'Submission Error',
             description: result.error || 'Could not submit your listing.',
         });
-      }
-      
-      // EmailJS logic is kept as a fallback or for client-side notifications if needed
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-      
-      if (serviceId && templateId && publicKey && formRef.current) {
-        try {
-          await emailjs.sendForm(serviceId, templateId, formRef.current, publicKey);
-          console.log('Submission email sent via EmailJS.');
-        } catch (error) {
-          console.error('EmailJS Error:', error);
-          // Don't show a toast here as the primary submission might have succeeded
-        }
       }
     });
   }
