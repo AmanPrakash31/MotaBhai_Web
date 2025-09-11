@@ -22,7 +22,7 @@ import { FileText, HomeIcon, IndianRupee, Star, ThumbsUp, Medal } from "lucide-r
 import Image from "next/image";
 import "./split-hover.css";
 import Autoplay from "embla-carousel-autoplay";
-import { getMotorcycles, getTestimonials } from "./actions";
+import { getMotorcycles, getTestimonials } from "./page.actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
