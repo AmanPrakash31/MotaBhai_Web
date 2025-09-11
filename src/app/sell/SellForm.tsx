@@ -53,6 +53,8 @@ const formSchema = z.object({
     .min(1900, "Please enter a valid year.")
     .max(new Date().getFullYear() + 1, "Year cannot be in the future."),
   kmDriven: z.coerce.number().min(0, "KM driven must be a positive number."),
+  engineDisplacement: z.coerce.number().min(50, "Engine CC is required."),
+  registration: z.string().min(2, "Registration is required."),
   condition: z.enum(["Excellent", "Good", "Fair", "Poor"]),
   description: z
     .string()
@@ -81,6 +83,8 @@ export default function SellForm() {
       model: "",
       year: undefined,
       kmDriven: undefined,
+      engineDisplacement: undefined,
+      registration: "",
       description: "",
       price: undefined,
     },
@@ -284,6 +288,39 @@ export default function SellForm() {
                           <Input
                             type="number"
                             placeholder="e.g., 8500"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="engineDisplacement"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Engine (CC)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 350"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="registration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registration</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., BR 05"
                             {...field}
                           />
                         </FormControl>

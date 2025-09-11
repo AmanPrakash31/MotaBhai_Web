@@ -39,6 +39,8 @@ const SubmitListingSchema = z.object({
   model: z.string().min(1),
   year: z.coerce.number(),
   kmDriven: z.coerce.number(),
+  engineDisplacement: z.coerce.number(),
+  registration: z.string().min(2),
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(20),
   price: z.coerce.number(),

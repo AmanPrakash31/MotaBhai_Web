@@ -34,6 +34,8 @@ export const listingSubmissions = pgTable('listing_submissions', {
   year: integer('year').notNull(),
   price: integer('price').notNull(),
   kmDriven: integer('km_driven').notNull(),
+  engineDisplacement: integer('engine_displacement').notNull(),
+  registration: varchar('registration', { length: 256 }).notNull(),
   condition: text('condition', { enum: ['Excellent', 'Good', 'Fair', 'Poor'] }).notNull(),
   description: text('description').notNull(),
   // Images are optional and not handled in DB yet.
