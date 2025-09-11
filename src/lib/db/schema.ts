@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, varchar, real, textArray, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, varchar, real, timestamp } from 'drizzle-orm/pg-core';
 import { InferSelectModel } from 'drizzle-orm';
 
 export const motorcycles = pgTable('motorcycles', {
