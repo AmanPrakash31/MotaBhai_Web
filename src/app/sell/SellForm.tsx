@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -89,7 +90,7 @@ export default function SellForm() {
     },
   });
 
-  const sendEmail = async (submissionDetails: object) => {
+  const sendEmail = async (submissionDetails: Record<string, unknown>) => {
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
       const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;

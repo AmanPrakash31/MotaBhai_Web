@@ -197,16 +197,16 @@ export default function AdminDashboard() {
   const openModal = (type: 'motorcycle' | 'testimonial', mode: 'add' | 'edit' | 'approve', data?: Motorcycle | Testimonial | ListingSubmission) => {
     setModalState({ type, mode, data, isOpen: true });
     if (type === 'motorcycle') {
-        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: '' };
+        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: [] as any };
 
         if (mode === 'edit' && data) {
-           defaultValues = { ...data, images: (data as Motorcycle).images.join(', ') };
+           defaultValues = { ...data, images: (data as Motorcycle).images.join(', ') as any };
         } else if (mode === 'approve' && data) {
            const submission = data as ListingSubmission;
            defaultValues = {
              ...submission,
              // Submissions might not have images, default to empty string for the form field
-             images: (submission.images || []).join(', '),
+             images: (submission.images || []).join(', ') as any,
              submissionId: submission.id,
            }
         }
