@@ -94,10 +94,9 @@ export async function deleteTestimonial(id: number) {
 export async function approveAndAddMotorcycle(submissionId: number, data: Omit<Motorcycle, 'id'>) {
     const validatedData = motorcycleSchema.parse(data);
     
-    await db.transaction(async (tx) => {
-        await tx.insert(motorcycles).values(validatedData);
-        await tx.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
-    });
+    // The neon-http driver doesn't support transactions. Run sequentially.
+    await db.insert(motorcycles).values(validatedData);
+    await db.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
 
     revalidatePath('/admin');
     revalidatePath('/');
