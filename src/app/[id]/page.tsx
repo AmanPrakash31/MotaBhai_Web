@@ -21,7 +21,12 @@ export async function generateStaticParams() {
 }
 
 export default async function MotorcycleDetailPage({ params }: { params: { id: string } }) {
-  const motorcycleData = await db.select().from(motorcyclesTable).where(eq(motorcyclesTable.id, parseInt(params.id, 10)));
+  const motorcycleId = parseInt(params.id, 10);
+  if (isNaN(motorcycleId)) {
+    notFound();
+  }
+
+  const motorcycleData = await db.select().from(motorcyclesTable).where(eq(motorcyclesTable.id, motorcycleId));
   const motorcycle = motorcycleData[0] as Motorcycle | undefined;
 
 
