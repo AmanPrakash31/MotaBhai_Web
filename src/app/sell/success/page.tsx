@@ -25,7 +25,7 @@ export default function SellSuccessPage() {
           <div className="mx-auto bg-green-100 rounded-full h-16 w-16 flex items-center justify-center">
             <CheckCircle2 className="h-10 w-10 text-green-600" />
           </div>
-          <CardTitle className="text-3xl font-bold mt-4">Submission Received!</CardTitle>
+          <CardTitle className="text-3xl font-bold mt-4">✅ Submission Received!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
