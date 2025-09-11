@@ -1,3 +1,4 @@
+
 export interface Motorcycle {
   id: number;
   make: string;
@@ -9,7 +10,7 @@ export interface Motorcycle {
   registration: string;
   condition: 'Excellent' | 'Good' | 'Fair' | 'Poor';
   description: string;
-  images: string[];
+  images: string[] | null;
 }
 
 export interface Testimonial {
@@ -18,5 +19,5 @@ export interface Testimonial {
   location: string;
   review: string;
   rating: number;
-  image: string;
+  image: string | null;
 }
