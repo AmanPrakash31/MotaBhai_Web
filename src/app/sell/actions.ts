@@ -4,8 +4,7 @@ import 'server-only'
 import { suggestListingPrice, type SuggestListingPriceInput, type SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { motorcycles } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { listingSubmissions } from '@/lib/db/schema';
 
 
 const ActionInputSchema = z.object({
@@ -43,8 +42,6 @@ const SubmitListingSchema = z.object({
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(20),
   price: z.coerce.number(),
-  // For now, we are not handling image uploads to the DB.
-  // This can be added later with a file storage service.
   images: z.any().optional(),
 });
 
@@ -57,26 +54,19 @@ export async function submitListing(data: unknown): Promise<{ success: boolean; 
       return { success: false, error: errorMessages };
     }
 
-    const { name, phone, location, ...motorcycleData } = validation.data;
+    const { images, ...submissionData } = validation.data;
     
-    // In a real app, you might want to associate the seller with the listing.
-    // For now, seller info is just passed through. The primary action is creating the motorcycle listing.
-
     try {
-        await db.insert(motorcycles).values({
-            ...motorcycleData,
-            // Images are not being saved yet. Placeholder.
-            images: ['https://picsum.photos/seed/new-listing/800/600'],
-            // In a real app, you would handle registration info differently.
-            registration: location.substring(0, 5) || 'N/A',
-            engineDisplacement: 0, // Placeholder
+        await db.insert(listingSubmissions).values({
+            ...submissionData
+            // Note: Image files are not being saved.
+            // The emailjs logic will handle notifications with attachments if configured.
         });
 
-        // The emailjs logic will handle notifications
         return { success: true };
 
     } catch (error) {
         console.error("Database insertion error:", error);
-        return { success: false, error: 'Failed to save the listing to the database.' };
+        return { success: false, error: 'Failed to save the listing submission to the database.' };
     }
 }
