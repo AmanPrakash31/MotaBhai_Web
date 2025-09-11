@@ -1,5 +1,5 @@
 export interface Motorcycle {
-  id: string;
+  id: number;
   make: string;
   model: string;
   year: number;
@@ -13,7 +13,7 @@ export interface Motorcycle {
 }
 
 export interface Testimonial {
-  id: string;
+  id: number;
   name: string;
   location: string;
   review: string;
