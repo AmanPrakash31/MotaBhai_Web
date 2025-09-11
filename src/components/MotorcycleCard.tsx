@@ -1,12 +1,22 @@
+
+'use client';
+
+import { useState } from 'react';
 import type { Motorcycle } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Gauge, Calendar, Tag } from 'lucide-react';
+import { ArrowRight, Gauge, Calendar } from 'lucide-react';
 import { Button } from './ui/button';
 
 export default function MotorcycleCard({ motorcycle }: { motorcycle: Motorcycle }) {
+  const [imageSrc, setImageSrc] = useState(motorcycle.images[0] || '/logo.png');
+
+  const handleImageError = () => {
+    setImageSrc('/logo.png');
+  };
+  
   const formatter = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
@@ -19,11 +29,12 @@ export default function MotorcycleCard({ motorcycle }: { motorcycle: Motorcycle 
         <CardHeader className="p-0">
           <div className="relative h-56 w-full">
             <Image
-              src={motorcycle.images[0]}
+              src={imageSrc}
               alt={`${motorcycle.make} ${motorcycle.model}`}
               data-ai-hint="motorcycle side"
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={handleImageError}
             />
           </div>
         </CardHeader>
