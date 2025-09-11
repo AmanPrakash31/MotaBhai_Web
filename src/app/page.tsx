@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import type { ChangeEvent } from "react";
-import { motorcycles as allMotorcycles, testimonials } from "@/lib/data";
 import MotorcycleCard from "@/components/MotorcycleCard";
 import MotorcycleFilters, {
   type Filters,
 } from "@/components/MotorcycleFilters";
 import TestimonialCard from "@/components/TestimonialCard";
-import type { Motorcycle } from "@/lib/types";
+import type { Motorcycle, Testimonial } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +22,9 @@ import { FileText, HomeIcon, IndianRupee, Star, ThumbsUp, Medal } from "lucide-r
 import Image from "next/image";
 import "./split-hover.css";
 import Autoplay from "embla-carousel-autoplay";
+import { getMotorcycles, getTestimonials } from "./actions";
+import { Skeleton } from "@/components/ui/skeleton";
+
 
 export default function HomePage() {
   const [filters, setFilters] = useState<Filters>({
@@ -31,6 +33,24 @@ export default function HomePage() {
     condition: "all",
     priceRange: [40000, 300000],
   });
+
+  const [allMotorcycles, setAllMotorcycles] = useState<Motorcycle[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      const [motorcyclesData, testimonialsData] = await Promise.all([
+        getMotorcycles(),
+        getTestimonials()
+      ]);
+      setAllMotorcycles(motorcyclesData);
+      setTestimonials(testimonialsData);
+      setLoading(false);
+    }
+    fetchData();
+  }, []);
 
   const handleFilterChange = (
     key: keyof Filters,
@@ -70,7 +90,7 @@ export default function HomePage() {
         motorcycle.price <= maxPrice
       );
     });
-  }, [filters]);
+  }, [filters, allMotorcycles]);
 
   const sellSteps = [
     {
@@ -173,7 +193,7 @@ export default function HomePage() {
 
       <section className="py-16 my-12 bg-secondary/50 rounded-lg">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-yellow-300">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-primary">
             USED TWO WHEELER - BUY & SELL ONLINE
           </h2>
           <p className="text-3xl md:text-4xl font-bold tracking-tight mt-2">
@@ -264,16 +284,33 @@ export default function HomePage() {
             className="w-full max-w-4xl mx-auto mt-12 relative"
           >
             <CarouselContent className="-ml-4">
-              {testimonials.map((testimonial) => (
-                <CarouselItem
-                  key={testimonial.id}
-                  className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3"
-                >
-                  <div className="p-1 h-full">
-                    <TestimonialCard testimonial={testimonial} />
-                  </div>
-                </CarouselItem>
-              ))}
+              {loading ? (
+                Array.from({length: 3}).map((_, i) => (
+                  <CarouselItem key={i} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                       <Card className="h-full flex flex-col">
+                          <CardContent className="p-6 space-y-4">
+                            <Skeleton className="h-12 w-12 rounded-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                            <Skeleton className="h-16 w-full" />
+                          </CardContent>
+                        </Card>
+                    </div>
+                  </CarouselItem>
+                ))
+              ) : (
+                testimonials.map((testimonial) => (
+                  <CarouselItem
+                    key={testimonial.id}
+                    className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3"
+                  >
+                    <div className="p-1 h-full">
+                      <TestimonialCard testimonial={testimonial} />
+                    </div>
+                  </CarouselItem>
+                ))
+              )}
             </CarouselContent>
              <CarouselPrevious className="absolute left-[-1rem] top-1/2 -translate-y-1/2 z-10 md:left-[-2rem]" />
              <CarouselNext className="absolute right-[-1rem] top-1/2 -translate-y-1/2 z-10 md:right-[-2rem]" />
@@ -298,8 +335,26 @@ export default function HomePage() {
           onReset={handleResetFilters}
           motorcycles={allMotorcycles}
         />
-
-        {filteredMotorcycles.length > 0 ? (
+        
+        {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i}>
+                        <CardContent className="p-0">
+                            <Skeleton className="h-56 w-full" />
+                            <div className="p-4 space-y-2">
+                                <Skeleton className="h-5 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                                <div className="flex justify-between items-center pt-4">
+                                  <Skeleton className="h-8 w-1/3" />
+                                  <Skeleton className="h-8 w-1/4" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        ) : filteredMotorcycles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
             {filteredMotorcycles.map((motorcycle) => (
               <MotorcycleCard key={motorcycle.id} motorcycle={motorcycle} />

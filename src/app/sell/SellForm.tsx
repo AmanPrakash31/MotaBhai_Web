@@ -28,7 +28,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getSuggestedPrice } from './actions';
+import { getSuggestedPrice, submitListing } from './actions';
 import { Loader2, Wand2 } from 'lucide-react';
 import type { SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
 
@@ -73,35 +73,34 @@ export default function SellForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     startSubmitTransition(async () => {
       
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-      
-      if (!serviceId || !templateId || !publicKey) {
-          toast({
-              variant: 'destructive',
-              title: 'Configuration Error',
-              description: 'EmailJS is not configured. Please add credentials to the .env file.',
-          });
-          return;
-      }
-      
-      if (!formRef.current) return;
-
-      try {
-        await emailjs.sendForm(serviceId, templateId, formRef.current, publicKey);
+      const result = await submitListing(values);
+      if (result.success) {
         toast({
           title: "Listing Submitted!",
           description: "Your motorcycle has been submitted for review. We'll be in touch.",
         });
         form.reset();
-      } catch (error) {
-        console.error('EmailJS Error:', error);
+      } else {
         toast({
-          variant: 'destructive',
-          title: 'Submission Error',
-          description: 'Could not submit your listing via EmailJS.',
+            variant: 'destructive',
+            title: 'Submission Error',
+            description: result.error || 'Could not submit your listing.',
         });
+      }
+      
+      // EmailJS logic is kept as a fallback or for client-side notifications if needed
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+      
+      if (serviceId && templateId && publicKey && formRef.current) {
+        try {
+          await emailjs.sendForm(serviceId, templateId, formRef.current, publicKey);
+          console.log('Submission email sent via EmailJS.');
+        } catch (error) {
+          console.error('EmailJS Error:', error);
+          // Don't show a toast here as the primary submission might have succeeded
+        }
       }
     });
   }
@@ -254,7 +253,7 @@ export default function SellForm() {
                     <FormItem>
                     <FormLabel>Upload Images (Optional)</FormLabel>
                     <FormControl><Input type="file" multiple {...fileRef} /></FormControl>
-                    <FormDescription>High-quality images help your listing sell faster. Attachments are not supported by EmailJS on the free plan.</FormDescription>
+                    <FormDescription>High-quality images help your listing sell faster. You can upload multiple images.</FormDescription>
                     <FormMessage />
                     </FormItem>
                 )} />

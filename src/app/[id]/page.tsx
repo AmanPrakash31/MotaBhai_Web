@@ -1,4 +1,6 @@
-import { motorcycles } from '@/lib/data';
+import { db } from '@/lib/db';
+import { motorcycles as motorcyclesTable } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -8,15 +10,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Gauge, ShieldCheck, Tag, Wrench, DraftingCompass, MapPin } from 'lucide-react';
+import type { Motorcycle } from '@/lib/types';
 
-export function generateStaticParams() {
+
+export async function generateStaticParams() {
+  const motorcycles = await db.select({ id: motorcyclesTable.id }).from(motorcyclesTable);
   return motorcycles.map((motorcycle) => ({
-    id: motorcycle.id,
+    id: motorcycle.id.toString(),
   }));
 }
 
-export default function MotorcycleDetailPage({ params }: { params: { id: string } }) {
-  const motorcycle = motorcycles.find(m => m.id === params.id);
+export default async function MotorcycleDetailPage({ params }: { params: { id: string } }) {
+  const motorcycleData = await db.select().from(motorcyclesTable).where(eq(motorcyclesTable.id, parseInt(params.id, 10)));
+  const motorcycle = motorcycleData[0] as Motorcycle | undefined;
+
 
   if (!motorcycle) {
     notFound();
