@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useState, useTransition, useRef } from 'react';
-import emailjs from '@emailjs/browser';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useState, useTransition, useRef } from "react";
+import emailjs from "@emailjs/browser";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -15,34 +15,48 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import { getSuggestedPrice } from './actions';
-import { Loader2, Wand2 } from 'lucide-react';
-import type { SuggestListingPriceOutput } from '@/ai/flows/suggest-listing-price';
-
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { getSuggestedPrice } from "./actions";
+import { Loader2, Wand2 } from "lucide-react";
+import type { SuggestListingPriceOutput } from "@/ai/flows/suggest-listing-price";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  phone: z.string().min(10, "Please enter a valid 10-digit phone number.").max(15, "Phone number is too long."),
+  phone: z
+    .string()
+    .min(10, "Please enter a valid 10-digit phone number.")
+    .max(15, "Phone number is too long."),
   location: z.string().min(2, "Location must be at least 2 characters."),
   make: z.string().min(2, "Make must be at least 2 characters."),
   model: z.string().min(1, "Model is required."),
-  year: z.coerce.number().min(1900, "Please enter a valid year.").max(new Date().getFullYear() + 1, "Year cannot be in the future."),
+  year: z.coerce
+    .number()
+    .min(1900, "Please enter a valid year.")
+    .max(new Date().getFullYear() + 1, "Year cannot be in the future."),
   kmDriven: z.coerce.number().min(0, "KM driven must be a positive number."),
-  condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
-  description: z.string().min(20, "Description must be at least 20 characters.").max(500, "Description cannot exceed 500 characters."),
+  condition: z.enum(["Excellent", "Good", "Fair", "Poor"]),
+  description: z
+    .string()
+    .min(20, "Description must be at least 20 characters.")
+    .max(500, "Description cannot exceed 500 characters."),
   price: z.coerce.number().min(1, "Please enter a valid price."),
   images: z.custom<FileList>().optional(),
 });
@@ -50,7 +64,8 @@ const formSchema = z.object({
 export default function SellForm() {
   const [isAiPending, startAiTransition] = useTransition();
   const [isSubmitPending, startSubmitTransition] = useTransition();
-  const [suggestion, setSuggestion] = useState<SuggestListingPriceOutput | null>(null);
+  const [suggestion, setSuggestion] =
+    useState<SuggestListingPriceOutput | null>(null);
   const [isSuggestionOpen, setIsSuggestionOpen] = useState(false);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -58,49 +73,55 @@ export default function SellForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      phone: '',
-      location: '',
-      make: '',
-      model: '',
+      name: "",
+      phone: "",
+      location: "",
+      make: "",
+      model: "",
       year: undefined,
       kmDriven: undefined,
-      description: '',
+      description: "",
       price: undefined,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     startSubmitTransition(async () => {
-      
       const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
       const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
       const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-      
+
       if (!serviceId || !templateId || !publicKey) {
-          toast({
-              variant: 'destructive',
-              title: 'Configuration Error',
-              description: 'EmailJS is not configured. Please add credentials to the .env file.',
-          });
-          return;
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description:
+            "EmailJS is not configured. Please add credentials to the .env file.",
+        });
+        return;
       }
-      
+
       if (!formRef.current) return;
 
       try {
-        await emailjs.sendForm(serviceId, templateId, formRef.current, publicKey);
+        await emailjs.sendForm(
+          serviceId,
+          templateId,
+          formRef.current,
+          publicKey
+        );
         toast({
           title: "Listing Submitted!",
-          description: "Your motorcycle has been submitted for review. We'll be in touch.",
+          description:
+            "Your motorcycle has been submitted for review. We'll be in touch.",
         });
         form.reset();
       } catch (error) {
-        console.error('EmailJS Error:', error);
+        console.error("EmailJS Error:", error);
         toast({
-          variant: 'destructive',
-          title: 'Submission Error',
-          description: 'Could not submit your listing via EmailJS.',
+          variant: "destructive",
+          title: "Submission Error",
+          description: "Could not submit your listing via EmailJS.",
         });
       }
     });
@@ -112,33 +133,40 @@ export default function SellForm() {
 
     if (!make || !model || !year || kmDriven === undefined || !condition) {
       toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out Make, Model, Year, KM driven, and Condition to get a price suggestion.',
+        variant: "destructive",
+        title: "Missing Information",
+        description:
+          "Please fill out Make, Model, Year, KM driven, and Condition to get a price suggestion.",
       });
       return;
     }
-    
+
     startAiTransition(async () => {
-      const result = await getSuggestedPrice({ make, model, year, kmDriven, condition });
+      const result = await getSuggestedPrice({
+        make,
+        model,
+        year,
+        kmDriven,
+        condition,
+      });
       if (result.success && result.data) {
         setSuggestion(result.data);
         setIsSuggestionOpen(true);
       } else {
         toast({
-          variant: 'destructive',
-          title: 'AI Error',
-          description: result.error || 'Could not generate a price suggestion.',
+          variant: "destructive",
+          title: "AI Error",
+          description: result.error || "Could not generate a price suggestion.",
         });
       }
     });
   };
-  
+
   const fileRef = form.register("images");
 
-  const formatter = new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  const formatter = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
     minimumFractionDigits: 0,
   });
 
@@ -147,122 +175,242 @@ export default function SellForm() {
       <Card>
         <CardContent className="p-8">
           <Form {...form}>
-            <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <div className="space-y-4">
-                    <CardHeader className="p-0 mb-4">
-                        <CardTitle>Your Contact Details</CardTitle>
-                    </CardHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormField control={form.control} name="name" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Full Name</FormLabel>
-                                <FormControl><Input placeholder="e.g., Rohan Kumar" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <FormField control={form.control} name="phone" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Phone Number</FormLabel>
-                                <FormControl><Input type="tel" placeholder="e.g., 9876543210" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <FormField control={form.control} name="location" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Your Location</FormLabel>
-                                <FormControl><Input placeholder="e.g., Muzaffarpur" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                    </div>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t">
-                    <CardHeader className="p-0 mb-4">
-                        <CardTitle>Motorcycle Details</CardTitle>
-                    </CardHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormField control={form.control} name="make" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Make</FormLabel>
-                            <FormControl><Input placeholder="e.g., Royal Enfield" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="model" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Model</FormLabel>
-                            <FormControl><Input placeholder="e.g., Classic 350" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="year" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Year</FormLabel>
-                            <FormControl><Input type="number" placeholder="e.g., 2021" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="kmDriven" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>KM driven</FormLabel>
-                            <FormControl><Input type="number" placeholder="e.g., 8500" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="condition" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Condition</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Select condition" /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                {['Excellent', 'Good', 'Fair', 'Poor'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="price" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Your Listing Price (in ₹)</FormLabel>
-                            <FormControl><Input type="number" placeholder="e.g., 180000" {...field} /></FormControl>
-                            <FormDescription>Enter your desired selling price in INR.</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                    </div>
-                </div>
-
-                <Button type="button" variant="outline" onClick={handleSuggestPrice} disabled={isAiPending}>
-                    {isAiPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                    <Wand2 className="mr-2 h-4 w-4" />
+            <form
+              ref={formRef}
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-8"
+            >
+              <div className="space-y-4">
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle>Your Contact Details</CardTitle>
+                </CardHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Rohan Kumar" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    Suggest a Price with AI
-                </Button>
-              
-                <FormField control={form.control} name="description" render={({ field }) => (
-                    <FormItem>
+                  />
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="tel"
+                            placeholder="e.g., 9876543210"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Muzaffarpur" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t">
+                <CardHeader className="p-0 mb-4">
+                  <CardTitle>Motorcycle Details</CardTitle>
+                </CardHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="make"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Make</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Royal Enfield" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="model"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Model</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Classic 350" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Year</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 2021"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="kmDriven"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>KM driven</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 8500"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="condition"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Condition</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select condition" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {["Excellent", "Good", "Fair", "Poor"].map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {c}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <input
+                          type="hidden"
+                          name="condition"
+                          value={field.value || ""}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Listing Price (in ₹)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g., 180000"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter your desired selling price in INR.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSuggestPrice}
+                disabled={isAiPending}
+              >
+                {isAiPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="mr-2 h-4 w-4" />
+                )}
+                Suggest a Price with AI
+              </Button>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Description</FormLabel>
-                    <FormControl><Textarea placeholder="Tell us about your motorcycle..." {...field} /></FormControl>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell us about your motorcycle..."
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
-                    </FormItem>
-                )} />
-              
-                <FormField control={form.control} name="images" render={({ field }) => (
-                    <FormItem>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="images"
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>Upload Images (Optional)</FormLabel>
-                    <FormControl><Input type="file" multiple {...fileRef} /></FormControl>
-                    <FormDescription>High-quality images help your listing sell faster. Attachments are not supported by EmailJS on the free plan.</FormDescription>
+                    <FormControl>
+                      <Input type="file" multiple {...fileRef} />
+                    </FormControl>
+                    <FormDescription>
+                      High-quality images help your listing sell faster.
+                      Attachments are not supported by EmailJS on the free plan.
+                    </FormDescription>
                     <FormMessage />
-                    </FormItem>
-                )} />
-              
-                <Button type="submit" size="lg" className="w-full" disabled={isSubmitPending}>
-                    {isSubmitPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Submit Listing
-                </Button>
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={isSubmitPending}
+              >
+                {isSubmitPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Submit Listing
+              </Button>
             </form>
           </Form>
         </CardContent>
@@ -270,22 +418,34 @@ export default function SellForm() {
       <Dialog open={isSuggestionOpen} onOpenChange={setIsSuggestionOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center"><Wand2 className="mr-2 h-5 w-5 text-primary"/> AI Price Suggestion</DialogTitle>
+            <DialogTitle className="flex items-center">
+              <Wand2 className="mr-2 h-5 w-5 text-primary" /> AI Price
+              Suggestion
+            </DialogTitle>
             <DialogDescription>
-              Based on the details you provided, here is our AI's suggestion for your listing.
+              Based on the details you provided, here is our AI's suggestion for
+              your listing.
             </DialogDescription>
           </DialogHeader>
           {suggestion && (
             <div className="py-4">
-              <p className="text-center text-4xl font-bold text-primary mb-4">{formatter.format(suggestion.suggestedPrice)}</p>
+              <p className="text-center text-4xl font-bold text-primary mb-4">
+                {formatter.format(suggestion.suggestedPrice)}
+              </p>
               <h4 className="font-semibold mt-6 mb-2">Reasoning:</h4>
-              <p className="text-sm text-muted-foreground bg-secondary p-3 rounded-md">{suggestion.reasoning}</p>
+              <p className="text-sm text-muted-foreground bg-secondary p-3 rounded-md">
+                {suggestion.reasoning}
+              </p>
             </div>
           )}
-          <Button onClick={() => {
-            if (suggestion) form.setValue('price', suggestion.suggestedPrice);
-            setIsSuggestionOpen(false);
-          }}>Use this Price</Button>
+          <Button
+            onClick={() => {
+              if (suggestion) form.setValue("price", suggestion.suggestedPrice);
+              setIsSuggestionOpen(false);
+            }}
+          >
+            Use this Price
+          </Button>
         </DialogContent>
       </Dialog>
     </>
