@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -55,6 +56,22 @@ const testimonialSchema = z.object({
   rating: z.coerce.number().min(1).max(5),
   image: z.string().url("Must be a valid URL"),
 });
+
+const TestimonialRowImage = ({ src, alt }: { src: string, alt: string }) => {
+  const [imageSrc, setImageSrc] = useState(src);
+  const handleError = () => setImageSrc('https://picsum.photos/seed/placeholder-user/100/100');
+
+  return (
+    <Image 
+      src={imageSrc} 
+      alt={alt} 
+      width={40} 
+      height={40} 
+      className="rounded-full" 
+      onError={handleError}
+    />
+  );
+};
 
 
 export default function AdminDashboard() {
@@ -384,7 +401,7 @@ export default function AdminDashboard() {
                   {testimonials.map((item) => (
                     <TableRow key={item.id}>
                        <TableCell>
-                        <Image src={item.image} alt={item.name} width={40} height={40} className="rounded-full" />
+                         <TestimonialRowImage src={item.image} alt={item.name} />
                       </TableCell>
                       <TableCell className="font-medium">{item.name} <br/> <span className="text-muted-foreground text-xs">{item.location}</span></TableCell>
                       <TableCell>{item.rating}/5</TableCell>

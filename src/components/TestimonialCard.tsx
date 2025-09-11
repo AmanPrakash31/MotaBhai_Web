@@ -1,3 +1,7 @@
+
+'use client';
+
+import { useState } from 'react';
 import type { Testimonial } from '@/lib/types';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -19,16 +23,24 @@ const Rating = ({ rating }: { rating: number }) => {
 };
 
 export default function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
+  const [imageSrc, setImageSrc] = useState(testimonial.image);
+
+  const handleImageError = () => {
+    // A generic placeholder if the original image fails
+    setImageSrc('https://picsum.photos/seed/placeholder-user/100/100'); 
+  };
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center gap-4">
         <Image
-          src={testimonial.image}
+          src={imageSrc}
           alt={testimonial.name}
           data-ai-hint="customer photo"
           width={56}
           height={56}
           className="rounded-full object-cover"
+          onError={handleImageError}
         />
         <div className="flex flex-col">
           <p className="font-semibold">{testimonial.name}</p>
