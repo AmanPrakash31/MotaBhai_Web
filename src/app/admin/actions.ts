@@ -2,9 +2,10 @@
 import 'server-only'
 
 import { db } from '@/lib/db';
-import { listingSubmissions, motorcycles, testimonials, type Motorcycle, type Testimonial, type ListingSubmission } from '@/lib/db/schema';
+import { listingSubmissions, motorcycles, testimonials, type Motorcycle, type Testimonial } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 export async function getSubmissions() {
   const allSubmissions = await db.select().from(listingSubmissions).orderBy(desc(listingSubmissions.submittedAt));
@@ -23,15 +24,30 @@ export async function getTestimonialsList() {
 
 // --- CRUD Actions ---
 
+const motorcycleSchema = z.object({
+  make: z.string().min(2),
+  model: z.string().min(1),
+  year: z.coerce.number(),
+  price: z.coerce.number(),
+  kmDriven: z.coerce.number(),
+  engineDisplacement: z.coerce.number(),
+  registration: z.string().min(2),
+  condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
+  description: z.string().min(10),
+  images: z.array(z.string().url()),
+});
+
 // Motorcycle Actions
 export async function addMotorcycle(data: Omit<Motorcycle, 'id'>) {
-    await db.insert(motorcycles).values(data);
+    const validatedData = motorcycleSchema.parse(data);
+    await db.insert(motorcycles).values(validatedData);
     revalidatePath('/admin');
     revalidatePath('/');
 }
 
 export async function updateMotorcycle(id: number, data: Omit<Motorcycle, 'id'>) {
-    await db.update(motorcycles).set(data).where(eq(motorcycles.id, id));
+    const validatedData = motorcycleSchema.parse(data);
+    await db.update(motorcycles).set(validatedData).where(eq(motorcycles.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
     revalidatePath(`/${id}`);
@@ -45,14 +61,24 @@ export async function deleteMotorcycle(id: number) {
 
 
 // Testimonial Actions
+const testimonialSchema = z.object({
+    name: z.string().min(2),
+    location: z.string().min(2),
+    review: z.string().min(10),
+    rating: z.coerce.number().min(1).max(5),
+    image: z.string().url(),
+});
+
 export async function addTestimonial(data: Omit<Testimonial, 'id'>) {
-    await db.insert(testimonials).values(data);
+    const validatedData = testimonialSchema.parse(data);
+    await db.insert(testimonials).values(validatedData);
     revalidatePath('/admin');
     revalidatePath('/');
 }
 
 export async function updateTestimonial(id: number, data: Omit<Testimonial, 'id'>) {
-    await db.update(testimonials).set(data).where(eq(testimonials.id, id));
+    const validatedData = testimonialSchema.parse(data);
+    await db.update(testimonials).set(validatedData).where(eq(testimonials.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
 }
@@ -65,20 +91,18 @@ export async function deleteTestimonial(id: number) {
 
 
 // Submission Actions
-export async function approveSubmission(submission: ListingSubmission) {
-    const { name, phone, location, images, submittedAt, id, ...motorcycleData } = submission;
+export async function approveAndAddMotorcycle(submissionId: number, data: Omit<Motorcycle, 'id'>) {
+    const validatedData = motorcycleSchema.parse(data);
     
     await db.transaction(async (tx) => {
-        await tx.insert(motorcycles).values({
-            ...motorcycleData,
-            images: images || [],
-        });
-        await tx.delete(listingSubmissions).where(eq(listingSubmissions.id, id));
+        await tx.insert(motorcycles).values(validatedData);
+        await tx.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
     });
 
     revalidatePath('/admin');
     revalidatePath('/');
 }
+
 
 export async function deleteSubmission(id: number) {
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, id));

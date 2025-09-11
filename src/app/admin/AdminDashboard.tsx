@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { getSubmissions, getMotorcycleListings, getTestimonialsList, deleteSubmission, deleteMotorcycle, deleteTestimonial, approveSubmission, addMotorcycle, updateMotorcycle, addTestimonial, updateTestimonial } from './actions';
+import { getSubmissions, getMotorcycleListings, getTestimonialsList, deleteSubmission, deleteMotorcycle, deleteTestimonial, addMotorcycle, updateMotorcycle, addTestimonial, updateTestimonial, approveAndAddMotorcycle } from './actions';
 import type { ListingSubmission, Motorcycle, Testimonial } from '@/lib/db/schema';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -44,6 +44,8 @@ const motorcycleSchema = z.object({
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(10, "Description is required"),
   images: z.string().transform(val => val.split(',').map(s => s.trim()).filter(Boolean)),
+  // Used only for the approval flow
+  submissionId: z.number().optional(),
 });
 
 const testimonialSchema = z.object({
@@ -65,8 +67,8 @@ export default function AdminDashboard() {
 
   const [modalState, setModalState] = useState<{
     type: 'motorcycle' | 'testimonial' | null;
-    mode: 'add' | 'edit';
-    data?: Motorcycle | Testimonial;
+    mode: 'add' | 'edit' | 'approve';
+    data?: Motorcycle | Testimonial | ListingSubmission;
     isOpen: boolean;
   }>({ type: null, mode: 'add', isOpen: false });
 
@@ -162,6 +164,8 @@ export default function AdminDashboard() {
       handleAction(() => addMotorcycle(values), 'New motorcycle listing added.');
     } else if (modalState.mode === 'edit' && modalState.data) {
       handleAction(() => updateMotorcycle(modalState.data!.id, values), 'Motorcycle listing updated.');
+    } else if (modalState.mode === 'approve' && values.submissionId) {
+      handleAction(() => approveAndAddMotorcycle(values.submissionId!, values), 'Submission approved and new listing created.');
     }
   };
 
@@ -173,10 +177,22 @@ export default function AdminDashboard() {
     }
   };
   
-  const openModal = (type: 'motorcycle' | 'testimonial', mode: 'add' | 'edit', data?: Motorcycle | Testimonial) => {
+  const openModal = (type: 'motorcycle' | 'testimonial', mode: 'add' | 'edit' | 'approve', data?: Motorcycle | Testimonial | ListingSubmission) => {
     setModalState({ type, mode, data, isOpen: true });
     if (type === 'motorcycle') {
-        const defaultValues = mode === 'edit' && data ? { ...data, images: (data as Motorcycle).images.join(', ') } : { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: [] };
+        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: '' };
+
+        if (mode === 'edit' && data) {
+           defaultValues = { ...data, images: (data as Motorcycle).images.join(', ') };
+        } else if (mode === 'approve' && data) {
+           const submission = data as ListingSubmission;
+           defaultValues = {
+             ...submission,
+             // Submissions might not have images, default to empty string for the form field
+             images: (submission.images || []).join(', '),
+             submissionId: submission.id,
+           }
+        }
         motorcycleForm.reset(defaultValues as any);
     }
     if (type === 'testimonial') {
@@ -254,7 +270,7 @@ export default function AdminDashboard() {
                       <TableCell>{sub.kmDriven.toLocaleString('en-IN')} km <br/> <Badge variant="secondary">{sub.condition}</Badge></TableCell>
                       <TableCell className="font-semibold">{formatter.format(sub.price)}</TableCell>
                       <TableCell className="text-right space-x-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleAction(() => approveSubmission(sub), "Submission approved and moved to live listings.")}>
+                        <Button variant="ghost" size="icon" onClick={() => openModal('motorcycle', 'approve', sub)}>
                             <CheckCircle className="h-4 w-4 text-green-500"/>
                         </Button>
                         <AlertDialog>
@@ -400,13 +416,17 @@ export default function AdminDashboard() {
       </Card>
     </div>
 
-    {/* Modals for Add/Edit */}
+    {/* Modals for Add/Edit/Approve */}
     <Dialog open={modalState.isOpen} onOpenChange={(isOpen) => setModalState(prev => ({...prev, isOpen}))}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             {modalState.type === 'motorcycle' && (
                 <>
                 <DialogHeader>
-                    <DialogTitle>{modalState.mode === 'add' ? 'Add New Listing' : 'Edit Listing'}</DialogTitle>
+                    <DialogTitle>{
+                      modalState.mode === 'add' ? 'Add New Listing' 
+                      : modalState.mode === 'edit' ? 'Edit Listing' 
+                      : 'Approve Submission'
+                    }</DialogTitle>
                 </DialogHeader>
                 <Form {...motorcycleForm}>
                     <form onSubmit={motorcycleForm.handleSubmit(onMotorcycleSubmit)} className="space-y-4">
