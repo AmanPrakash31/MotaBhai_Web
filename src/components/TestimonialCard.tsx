@@ -23,11 +23,11 @@ const Rating = ({ rating }: { rating: number }) => {
 };
 
 export default function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
-  const [imageSrc, setImageSrc] = useState(testimonial.image || 'https://picsum.photos/seed/placeholder-user/100/100');
+  const [imageSrc, setImageSrc] = useState(testimonial.image || '/user.png');
 
   const handleImageError = () => {
     // A generic placeholder if the original image fails
-    setImageSrc('https://picsum.photos/seed/placeholder-user/100/100'); 
+    setImageSrc('/user.png'); 
   };
 
   return (
