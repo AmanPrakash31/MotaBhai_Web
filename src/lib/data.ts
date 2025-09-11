@@ -2,7 +2,7 @@ import type { Motorcycle, Testimonial } from '@/lib/types';
 
 export const motorcycles: Motorcycle[] = [
   {
-    id: '1',
+    id: 1,
     make: 'Royal Enfield',
     model: 'Classic 350',
     year: 2020,
@@ -19,7 +19,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
   {
-    id: '2',
+    id: 2,
     make: 'Yamaha',
     model: 'R15',
     year: 2019,
@@ -36,7 +36,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
   {
-    id: '3',
+    id: 3,
     make: 'Bajaj',
     model: 'N160',
     year: 2023,
@@ -53,7 +53,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
   {
-    id: '4',
+    id: 4,
     make: 'Bajaj',
     model: 'NS160',
     year: 2020,
@@ -70,7 +70,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
   {
-    id: '5',
+    id: 5,
     make: 'Hero',
     model: 'Glamour',
     year: 2019,
@@ -87,7 +87,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
   {
-    id: '6',
+    id: 6,
     make: 'Bajaj',
     model: 'Pulsar 125',
     year: 2019,
@@ -104,7 +104,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
    {
-    id: '7',
+    id: 7,
     make: 'Hero',
     model: 'Pleasure',
     year: 2020,
@@ -121,7 +121,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
    {
-    id: '8',
+    id: 8,
     make: 'Royal Enfield',
     model: 'Hunter 350',
     year: 2023,
@@ -138,7 +138,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
    {
-    id: '9',
+    id: 9,
     make: 'TVS',
     model: 'Apache RTR 200',
     year: 2021,
@@ -155,7 +155,7 @@ export const motorcycles: Motorcycle[] = [
     ],
   },
    {
-    id: '10',
+    id: 10,
     make: 'Hero',
     model: 'Splendor',
     year: 2023,
@@ -175,7 +175,7 @@ export const motorcycles: Motorcycle[] = [
 
 export const testimonials: Testimonial[] = [
     {
-      id: '1',
+      id: 1,
       name: 'Rohan Kumar',
       location: 'Muzaffarpur, Bihar',
       review: 'Excellent service and a fantastic bike! The team at Mota Bhai Automobiles made the whole process smooth and transparent. I couldn\'t be happier with my Royal Enfield.',
@@ -183,7 +183,7 @@ export const testimonials: Testimonial[] = [
       image: 'https://picsum.photos/seed/rohan/100/100',
     },
     {
-      id: '2',
+      id: 2,
       name: 'Priya Sharma',
       location: 'Patna, Bihar',
       review: 'I sold my old bike and got a great price for it. The home inspection was convenient, and I got paid instantly. Highly recommend Mota Bhai for selling your bike!',
@@ -191,7 +191,7 @@ export const testimonials: Testimonial[] = [
       image: 'https://picsum.photos/seed/priya/100/100',
     },
     {
-      id: '3',
+      id: 3,
       name: 'Amit Singh',
       location: 'Darbhanga, Bihar',
       review: 'Found a well-maintained Pulsar at a very reasonable price. The staff was helpful and answered all my questions. A trustworthy place for second-hand bikes.',
@@ -199,7 +199,7 @@ export const testimonials: Testimonial[] = [
       image: 'https://picsum.photos/seed/amit/100/100',
     },
     {
-      id: '4',
+      id: 4,
       name: 'Sneha Gupta',
       location: 'Muzaffarpur, Bihar',
       review: 'The process of buying my first scooter was so easy here. They have a good collection and the prices are fair. I\'m very satisfied with my purchase.',
