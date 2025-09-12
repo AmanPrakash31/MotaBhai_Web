@@ -38,7 +38,6 @@ export const listingSubmissions = pgTable('listing_submissions', {
   registration: varchar('registration', { length: 256 }).notNull(),
   condition: text('condition', { enum: ['Excellent', 'Good', 'Fair', 'Poor'] }).notNull(),
   description: text('description').notNull(),
-  // Images are optional and not handled in DB yet.
   images: text('images').array(),
   submittedAt: timestamp('submitted_at').defaultNow().notNull(),
 });

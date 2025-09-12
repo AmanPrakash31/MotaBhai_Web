@@ -7,6 +7,7 @@ import { listingSubmissions, motorcycles, testimonials, type Motorcycle, type Te
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { supabase } from '@/lib/supabase';
 
 export async function getSubmissions() {
   const allSubmissions = await db.select().from(listingSubmissions).orderBy(desc(listingSubmissions.submittedAt));
@@ -35,7 +36,7 @@ const motorcycleSchema = z.object({
   registration: z.string().min(2),
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(10),
-  images: z.array(z.string().url()),
+  images: z.array(z.string().url()).nullable(),
 });
 
 // Motorcycle Actions
@@ -67,7 +68,7 @@ const testimonialSchema = z.object({
     location: z.string().min(2),
     review: z.string().min(10),
     rating: z.coerce.number().min(1).max(5),
-    image: z.string().url().or(z.literal('')),
+    image: z.string().url().or(z.literal('')).nullable(),
 });
 
 export async function addTestimonial(data: Omit<Testimonial, 'id'>) {
@@ -113,6 +114,19 @@ export async function approveAndAddMotorcycle(submissionId: number, data: Omit<M
 
 
 export async function deleteSubmission(id: number) {
+    const submissionToDelete = await db.select({images: listingSubmissions.images}).from(listingSubmissions).where(eq(listingSubmissions.id, id));
+    
+    if (submissionToDelete.length > 0 && submissionToDelete[0].images) {
+        const imagePaths = submissionToDelete[0].images.map(url => new URL(url).pathname.split('/listings-images/')[1]);
+        if (imagePaths.length > 0) {
+            const { error: deleteError } = await supabase.storage.from('listings-images').remove(imagePaths);
+            if (deleteError) {
+                console.error("Supabase image deletion error:", deleteError);
+                // Decide if you want to stop the process or just log the error
+            }
+        }
+    }
+    
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, id));
     revalidatePath('/admin');
 }

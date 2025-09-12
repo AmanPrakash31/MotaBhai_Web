@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { listingSubmissions } from '@/lib/db/schema';
 import { redirect } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 
 const ActionInputSchema = z.object({
@@ -46,13 +48,21 @@ const SubmitListingSchema = z.object({
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(20),
   price: z.coerce.number(),
-  images: z.any().optional(),
 });
 
 
 export async function submitListing(formData: FormData): Promise<{ success: boolean; error?: string, newSubmission?: any }> {
     const rawData = Object.fromEntries(formData.entries());
-    const validation = SubmitListingSchema.safeParse(rawData);
+    
+    // Remove file entries for validation with Zod
+    const rawDataWithoutFiles: { [key: string]: any } = {};
+    for (const key in rawData) {
+        if (!(rawData[key] instanceof File)) {
+            rawDataWithoutFiles[key] = rawData[key];
+        }
+    }
+
+    const validation = SubmitListingSchema.safeParse(rawDataWithoutFiles);
 
     if (!validation.success) {
       const errorMessages = validation.error.issues.map(issue => issue.message).join(', ');
@@ -60,13 +70,37 @@ export async function submitListing(formData: FormData): Promise<{ success: bool
       return { success: false, error: errorMessages };
     }
 
-    const { images, ...submissionData } = validation.data;
+    const { ...submissionData } = validation.data;
     const uploadedImages = formData.getAll('images') as File[];
     const hasImages = uploadedImages.some(file => file.size > 0);
+    let imageUrls: string[] | null = null;
+    
+    if (hasImages) {
+        imageUrls = [];
+        for (const image of uploadedImages) {
+            if (image.size > 0) {
+                const fileExtension = image.name.split('.').pop();
+                const fileName = `${uuidv4()}.${fileExtension}`;
+                
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('listings-images')
+                    .upload(fileName, image);
 
-    // In a real app, you would upload images to a storage service and get back the URLs.
-    // For now, we just check if images are present and store null if not.
-    const imageUrls = hasImages ? [] : null;
+                if (uploadError) {
+                    console.error("Supabase upload error:", uploadError);
+                    return { success: false, error: 'Failed to upload one or more images.' };
+                }
+
+                const { data: publicUrlData } = supabase.storage
+                    .from('listings-images')
+                    .getPublicUrl(uploadData.path);
+                
+                if (publicUrlData) {
+                    imageUrls.push(publicUrlData.publicUrl);
+                }
+            }
+        }
+    }
 
 
     try {
