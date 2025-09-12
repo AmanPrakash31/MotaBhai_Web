@@ -220,10 +220,8 @@ export async function approveAndAddMotorcycle(formData: FormData) {
 
     const finalImages = [...(existingImages || []), ...newImageUrls];
 
-    // Some images from the submission might have been removed during approval.
-    // We don't delete them here, we just don't add them to the final listing.
-    // The original submission record with its images will be deleted.
-    // If an image from submission was removed AND it's not in finalImages, it should be deleted.
+    // Images from the original submission might have been removed during approval.
+    // Here we find which ones to delete from Supabase storage.
     const imagesToDelete = originalSubmissionImages.filter(img => !finalImages.includes(img));
     await deleteImages(imagesToDelete, 'listings-images');
 
