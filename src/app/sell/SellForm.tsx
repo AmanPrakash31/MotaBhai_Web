@@ -81,12 +81,12 @@ export default function SellForm() {
       location: "",
       make: "",
       model: "",
-      year: undefined,
-      kmDriven: undefined,
-      engineDisplacement: undefined,
+      year: '' as any,
+      kmDriven: '' as any,
+      engineDisplacement: '' as any,
       registration: "",
       description: "",
-      price: undefined,
+      price: '' as any,
     },
   });
 
