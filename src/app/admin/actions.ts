@@ -7,7 +7,7 @@ import { listingSubmissions, motorcycles, testimonials, type Motorcycle, type Te
 import { desc, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 async function uploadImages(images: File[], bucket: string): Promise<string[] | null> {
@@ -20,7 +20,7 @@ async function uploadImages(images: File[], bucket: string): Promise<string[] | 
             const fileExtension = image.name.split('.').pop();
             const fileName = `${uuidv4()}.${fileExtension}`;
             
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
                 .from(bucket)
                 .upload(fileName, image);
 
@@ -29,7 +29,7 @@ async function uploadImages(images: File[], bucket: string): Promise<string[] | 
                 throw new Error('Failed to upload one or more images.');
             }
 
-            const { data: publicUrlData } = supabase.storage
+            const { data: publicUrlData } = supabaseAdmin.storage
                 .from(bucket)
                 .getPublicUrl(uploadData.path);
             
@@ -185,7 +185,7 @@ export async function approveAndAddMotorcycle(formData: FormData) {
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
 
     revalidatePath('/admin');
-    revalidatePath('/');
+revalidatePath('/');
 }
 
 export async function deleteSubmission(id: number) {
@@ -194,7 +194,7 @@ export async function deleteSubmission(id: number) {
     if (submissionToDelete.length > 0 && submissionToDelete[0].images) {
         const imagePaths = submissionToDelete[0].images.map(url => new URL(url).pathname.split('/listings-images/')[1]).filter(Boolean);
         if (imagePaths.length > 0) {
-            const { error: deleteError } = await supabase.storage.from('listings-images').remove(imagePaths);
+            const { error: deleteError } = await supabaseAdmin.storage.from('listings-images').remove(imagePaths);
             if (deleteError) {
                 console.error("Supabase image deletion error:", deleteError);
                 // Decide if you want to stop the process or just log the error
