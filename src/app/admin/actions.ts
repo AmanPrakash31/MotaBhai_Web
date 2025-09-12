@@ -109,7 +109,7 @@ export async function addMotorcycle(formData: FormData) {
     
     const allImageUrls = [...validatedData.existingImages, ...newImageUrls];
 
-    const { existingImages, ...dataToInsert } = validatedData;
+    const { existingImages, id, ...dataToInsert } = validatedData;
     
     await db.insert(motorcycles).values({ ...dataToInsert, images: allImageUrls });
     revalidatePath('/admin');
@@ -174,7 +174,7 @@ export async function addTestimonial(formData: FormData) {
         imageUrl = urls.length > 0 ? urls[0] : null;
     }
     
-    const { existingImage, ...dataToInsert } = validatedData;
+    const { existingImage, id, ...dataToInsert } = validatedData;
     
     await db.insert(testimonials).values({ ...dataToInsert, image: imageUrl });
     revalidatePath('/admin');
@@ -266,3 +266,6 @@ export async function deleteSubmission(id: number) {
 }
 
 
+
+
+    
