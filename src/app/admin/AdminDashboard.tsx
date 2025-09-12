@@ -186,7 +186,9 @@ export default function AdminDashboard() {
       if (key === 'images' && value) {
         Array.from(value as FileList).forEach(file => formData.append('images', file));
       } else if (key === 'existingImages' && Array.isArray(value)) {
-        value.forEach(img => formData.append('existingImages', img));
+        // This is now handled by the hidden input, but we'll leave this for safety.
+        // It ensures the value is set for the server action.
+        formData.append('existingImages', value.join(','));
       } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
       }
@@ -244,9 +246,13 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleRemoveImage = (imageUrl: string) => {
-    const currentImages = motorcycleForm.getValues('existingImages') || [];
-    motorcycleForm.setValue('existingImages', currentImages.filter(img => img !== imageUrl));
+  const handleRemoveImage = (imageUrl: string, fieldName: 'existingImages' | 'existingImage') => {
+    if (fieldName === 'existingImages') {
+      const currentImages = motorcycleForm.getValues(fieldName) || [];
+      motorcycleForm.setValue(fieldName, currentImages.filter(img => img !== imageUrl));
+    } else {
+        testimonialForm.setValue(fieldName, undefined);
+    }
   };
 
 
@@ -514,20 +520,32 @@ export default function AdminDashboard() {
                         <FormField control={motorcycleForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
                         
                         {(modalState.mode === 'edit' || modalState.mode === 'approve') && (
-                          <div className="space-y-2">
-                              <FormLabel>Existing Images</FormLabel>
-                              <div className="flex flex-wrap gap-2">
-                                  {motorcycleForm.getValues('existingImages')?.map((img) => (
-                                      <div key={img} className="relative group">
-                                          <Image src={img} alt="Existing image" width={80} height={80} className="rounded object-cover"/>
-                                          <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100" onClick={() => handleRemoveImage(img)}>
-                                              <X className="h-4 w-4"/>
-                                          </Button>
-                                      </div>
-                                  ))}
-                              </div>
-                               {motorcycleForm.getValues('existingImages')?.length === 0 && <p className="text-sm text-muted-foreground">No images exist for this listing.</p>}
-                          </div>
+                            <FormField
+                                control={motorcycleForm.control}
+                                name="existingImages"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Existing Images</FormLabel>
+                                        <FormControl>
+                                            <>
+                                                <input type="hidden" {...field} value={field.value?.join(',') || ''} />
+                                                <div className="flex flex-wrap gap-2">
+                                                    {field.value?.map((img) => (
+                                                        <div key={img} className="relative group">
+                                                            <Image src={img} alt="Existing image" width={80} height={80} className="rounded object-cover"/>
+                                                            <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100" onClick={() => handleRemoveImage(img, 'existingImages')}>
+                                                                <X className="h-4 w-4"/>
+                                                            </Button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {field.value?.length === 0 && <p className="text-sm text-muted-foreground">No images exist for this listing.</p>}
+                                            </>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         )}
 
                         <FormField control={motorcycleForm.control} name="images" render={() => ( 
@@ -565,7 +583,7 @@ export default function AdminDashboard() {
                                 <FormLabel>Current Image</FormLabel>
                                 <div className="flex items-center gap-4">
                                      <Image src={testimonialForm.getValues().existingImage!} alt="Current testimonial image" width={60} height={60} className="rounded-md object-cover"/>
-                                     <Button variant="outline" size="sm" onClick={() => testimonialForm.setValue('existingImage', '')}>Remove Image</Button>
+                                     <Button variant="outline" size="sm" onClick={() => handleRemoveImage(testimonialForm.getValues().existingImage!, 'existingImage')}>Remove Image</Button>
                                 </div>
                                 <FormDescription>Removing the image will save the testimonial without one. You can upload a new one below to replace it.</FormDescription>
                              </div>

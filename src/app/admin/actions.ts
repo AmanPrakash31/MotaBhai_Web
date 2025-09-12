@@ -44,12 +44,17 @@ async function deleteImages(urls: string[], bucket: string) {
     if (!urls || urls.length === 0) return;
     const fileNames = urls.map(url => {
         try {
-            return new URL(url).pathname.split(`/${bucket}/`)[1];
+            // Ensure we are only trying to delete files from our own supabase storage
+             const urlObject = new URL(url);
+             const supabaseUrl = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!);
+             if (urlObject.hostname !== supabaseUrl.hostname) return null;
+            return urlObject.pathname.split(`/${bucket}/`)[1];
         } catch (e) {
             console.error(`Invalid URL format, cannot delete: ${url}`);
             return null;
         }
-    }).filter((name): name is string => name !== null);
+    }).filter((name): name is string => name !== null && name !== '');
+
 
     if (fileNames.length > 0) {
         const { error } = await supabaseAdmin.storage.from(bucket).remove(fileNames);
