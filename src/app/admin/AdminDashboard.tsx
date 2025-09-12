@@ -225,11 +225,13 @@ export default function AdminDashboard() {
 
         if (mode === 'edit' && data) {
            const motorcycleData = data as Motorcycle;
-           defaultValues = { ...motorcycleData, existingImages: motorcycleData.images || [] };
+           const { images, ...rest } = motorcycleData;
+           defaultValues = { ...rest, existingImages: images || [] };
         } else if (mode === 'approve' && data) {
            const submission = data as ListingSubmission;
            defaultValues = {
              ...submission,
+             images: undefined,
              existingImages: submission.images || [],
              submissionId: submission.id,
            }
@@ -237,7 +239,9 @@ export default function AdminDashboard() {
         motorcycleForm.reset(defaultValues as any);
     }
     if (type === 'testimonial') {
-        const defaultValues = mode === 'edit' && data ? { ...data, existingImage: data.image || undefined } : { rating: 5, existingImage: undefined };
+        const defaultValues = mode === 'edit' && data
+          ? { ...data, existingImage: (data as Testimonial).image || undefined }
+          : { rating: 5, existingImage: undefined };
         testimonialForm.reset(defaultValues as any);
     }
   };
