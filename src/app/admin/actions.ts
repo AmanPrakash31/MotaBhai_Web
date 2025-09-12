@@ -42,15 +42,23 @@ async function uploadImages(images: File[], bucket: string): Promise<string[]> {
 
 async function deleteImages(urls: string[], bucket: string) {
     if (!urls || urls.length === 0) return;
-    const fileNames = urls.map(url => new URL(url).pathname.split(`/${bucket}/`)[1]).filter(Boolean);
+    const fileNames = urls.map(url => {
+        try {
+            return new URL(url).pathname.split(`/${bucket}/`)[1];
+        } catch (e) {
+            console.error(`Invalid URL format, cannot delete: ${url}`);
+            return null;
+        }
+    }).filter((name): name is string => name !== null);
+
     if (fileNames.length > 0) {
         const { error } = await supabaseAdmin.storage.from(bucket).remove(fileNames);
         if (error) {
             console.error(`Supabase image deletion error in bucket ${bucket}:`, error);
-            // Decide if we should throw or just log. For now, just log.
         }
     }
 }
+
 
 export async function getSubmissions() {
   const allSubmissions = await db.select().from(listingSubmissions).orderBy(desc(listingSubmissions.submittedAt));
@@ -80,7 +88,11 @@ const motorcycleFormSchema = z.object({
   registration: z.string().min(2),
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(10),
-  existingImages: z.string().optional().transform(val => val ? val.split(',').filter(Boolean) : []),
+  existingImages: z.preprocess(val => {
+    if (typeof val === 'string' && val) return val.split(',');
+    if (Array.isArray(val)) return val;
+    return [];
+  }, z.array(z.string())),
 });
 
 export async function addMotorcycle(formData: FormData) {
@@ -90,11 +102,11 @@ export async function addMotorcycle(formData: FormData) {
     const newImages = formData.getAll('images') as File[];
     const newImageUrls = await uploadImages(newImages, 'listings-images');
     
-    const allImageUrls = [...newImageUrls];
+    const allImageUrls = [...validatedData.existingImages, ...newImageUrls];
 
-    const dataToInsert = { ...validatedData, images: allImageUrls };
+    const { existingImages, ...dataToInsert } = validatedData;
     
-    await db.insert(motorcycles).values(dataToInsert);
+    await db.insert(motorcycles).values({ ...dataToInsert, images: allImageUrls });
     revalidatePath('/admin');
     revalidatePath('/');
 }
@@ -112,7 +124,7 @@ export async function updateMotorcycle(formData: FormData) {
     const newImages = formData.getAll('images') as File[];
     const newImageUrls = await uploadImages(newImages, 'listings-images');
     
-    const finalImages = [...(existingImages || []), ...newImageUrls];
+    const finalImages = [...existingImages, ...newImageUrls];
     
     // Determine which images were removed to delete them from storage
     const imagesToDelete = originalImages.filter(img => !finalImages.includes(img));
@@ -143,7 +155,7 @@ const testimonialFormSchema = z.object({
     location: z.string().min(2),
     review: z.string().min(10),
     rating: z.coerce.number().min(1).max(5),
-    existingImage: z.string().optional(),
+    existingImage: z.string().optional().transform(val => val || null),
 });
 
 export async function addTestimonial(formData: FormData) {
@@ -154,7 +166,7 @@ export async function addTestimonial(formData: FormData) {
     let imageUrl: string | null = null;
     if (imageFile && imageFile.size > 0) {
         const urls = await uploadImages([imageFile], 'testimonials-images');
-        imageUrl = urls ? urls[0] : null;
+        imageUrl = urls.length > 0 ? urls[0] : null;
     }
     
     const { existingImage, ...dataToInsert } = validatedData;
@@ -174,17 +186,20 @@ export async function updateTestimonial(formData: FormData) {
     const originalImage = testimonialBeforeUpdate?.image;
 
     const imageFile = formData.get('image') as File | null;
-    let newImageUrl: string | null = existingImage || null;
+    let newImageUrl: string | null = existingImage;
     
     if (imageFile && imageFile.size > 0) {
         const urls = await uploadImages([imageFile], 'testimonials-images');
-        newImageUrl = urls ? urls[0] : null;
-    }
-
-    // If original image existed and the new one is different (or null), delete the old one.
-    if (originalImage && originalImage !== newImageUrl) {
+        newImageUrl = urls.length > 0 ? urls[0] : null;
+        // If we uploaded a new image, the old one should be deleted if it existed
+        if (originalImage && originalImage !== newImageUrl) {
+            await deleteImages([originalImage], 'testimonials-images');
+        }
+    } else if (originalImage && !newImageUrl) {
+        // This case handles removing an image without uploading a new one
         await deleteImages([originalImage], 'testimonials-images');
     }
+
 
     await db.update(testimonials).set({ ...dataToUpdate, image: newImageUrl }).where(eq(testimonials.id, id));
     revalidatePath('/admin');
@@ -213,12 +228,14 @@ export async function approveAndAddMotorcycle(formData: FormData) {
     const { submissionId, id, existingImages, ...dataToInsert } = validatedData;
     
     const submissionBeforeApproval = await db.query.listingSubmissions.findFirst({ where: eq(listingSubmissions.id, submissionId) });
-    const originalSubmissionImages = submissionBeforeApproval?.images || [];
+    if (!submissionBeforeApproval) throw new Error("Submission not found");
+
+    const originalSubmissionImages = submissionBeforeApproval.images || [];
 
     const newImages = formData.getAll('images') as File[];
     const newImageUrls = await uploadImages(newImages, 'listings-images');
 
-    const finalImages = [...(existingImages || []), ...newImageUrls];
+    const finalImages = [...existingImages, ...newImageUrls];
 
     // Images from the original submission might have been removed during approval.
     // Here we find which ones to delete from Supabase storage.
