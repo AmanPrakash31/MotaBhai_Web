@@ -10,9 +10,8 @@ import { z } from 'zod';
 import { supabaseAdmin } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
-async function uploadImages(images: File[], bucket: string): Promise<string[] | null> {
-    const hasImages = images.some(file => file.size > 0);
-    if (!hasImages) return null;
+async function uploadImages(images: File[], bucket: string): Promise<string[]> {
+    if (!images || images.length === 0 || images.every(file => file.size === 0)) return [];
 
     const imageUrls: string[] = [];
     for (const image of images) {
@@ -81,7 +80,7 @@ const motorcycleFormSchema = z.object({
   registration: z.string().min(2),
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(10),
-  existingImages: z.string().optional().transform(val => val ? val.split(',') : []),
+  existingImages: z.string().optional().transform(val => val ? val.split(',').filter(Boolean) : []),
 });
 
 export async function addMotorcycle(formData: FormData) {
@@ -89,7 +88,7 @@ export async function addMotorcycle(formData: FormData) {
     const validatedData = motorcycleFormSchema.parse(rawData);
     
     const newImages = formData.getAll('images') as File[];
-    const newImageUrls = await uploadImages(newImages, 'listings-images') || [];
+    const newImageUrls = await uploadImages(newImages, 'listings-images');
     
     const allImageUrls = [...newImageUrls];
 
@@ -111,7 +110,7 @@ export async function updateMotorcycle(formData: FormData) {
     const originalImages = listingBeforeUpdate?.images || [];
 
     const newImages = formData.getAll('images') as File[];
-    const newImageUrls = await uploadImages(newImages, 'listings-images') || [];
+    const newImageUrls = await uploadImages(newImages, 'listings-images');
     
     const finalImages = [...(existingImages || []), ...newImageUrls];
     
@@ -217,7 +216,7 @@ export async function approveAndAddMotorcycle(formData: FormData) {
     const originalSubmissionImages = submissionBeforeApproval?.images || [];
 
     const newImages = formData.getAll('images') as File[];
-    const newImageUrls = await uploadImages(newImages, 'listings-images') || [];
+    const newImageUrls = await uploadImages(newImages, 'listings-images');
 
     const finalImages = [...(existingImages || []), ...newImageUrls];
 
@@ -232,20 +231,16 @@ export async function approveAndAddMotorcycle(formData: FormData) {
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
 
     revalidatePath('/admin');
-revalidatePath('/');
+    revalidatePath('/');
 }
 
 export async function deleteSubmission(id: number) {
-    const submissionToDelete = await db.select({images: listingSubmissions.images}).from(listingSubmissions).where(eq(listingSubmissions.id, id));
+    const submissionToDelete = await db.query.listingSubmissions.findFirst({ where: eq(listingSubmissions.id, id) });
     
-    if (submissionToDelete.length > 0 && submissionToDelete[0].images) {
-        await deleteImages(submissionToDelete[0].images, 'listings-images');
+    if (submissionToDelete && submissionToDelete.images) {
+        await deleteImages(submissionToDelete.images, 'listings-images');
     }
     
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, id));
     revalidatePath('/admin');
 }
-
-    
-
-    
