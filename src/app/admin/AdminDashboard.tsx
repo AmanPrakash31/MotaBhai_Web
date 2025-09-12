@@ -28,7 +28,7 @@ import Image from 'next/image';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Loader2, PlusCircle, Trash2, Pencil, CheckCircle } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, Pencil, CheckCircle, X } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string().min(1, 'Password is required.'),
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
   const openModal = (type: 'motorcycle' | 'testimonial', mode: 'add' | 'edit' | 'approve', data?: Motorcycle | Testimonial | ListingSubmission) => {
     setModalState({ type, mode, data, isOpen: true });
     if (type === 'motorcycle') {
-        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150 };
+        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: undefined, existingImages: [] };
 
         if (mode === 'edit' && data) {
            const motorcycleData = data as Motorcycle;
@@ -239,12 +239,16 @@ export default function AdminDashboard() {
         motorcycleForm.reset(defaultValues as any);
     }
     if (type === 'testimonial') {
-        const defaultValues = mode === 'edit' && data
-          ? { ...data, existingImage: (data as Testimonial).image || undefined }
-          : { rating: 5, existingImage: undefined };
+        const defaultValues = mode === 'edit' && data ? { ...data, existingImage: (data as Testimonial).image || undefined, image: undefined } : { rating: 5, existingImage: undefined, image: undefined };
         testimonialForm.reset(defaultValues as any);
     }
   };
+
+  const handleRemoveImage = (imageUrl: string) => {
+    const currentImages = motorcycleForm.getValues('existingImages') || [];
+    motorcycleForm.setValue('existingImages', currentImages.filter(img => img !== imageUrl));
+  };
+
 
   if (!isAuthenticated) {
     return (
@@ -307,6 +311,7 @@ export default function AdminDashboard() {
                     <TableHead>Contact</TableHead>
                     <TableHead>Details</TableHead>
                     <TableHead>Price</TableHead>
+                     <TableHead>Images</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -317,6 +322,11 @@ export default function AdminDashboard() {
                       <TableCell>{sub.name} <br/> <span className="text-muted-foreground">{sub.phone} | {sub.location}</span></TableCell>
                       <TableCell>{sub.kmDriven.toLocaleString('en-IN')} km <br/> <Badge variant="secondary">{sub.condition}</Badge></TableCell>
                       <TableCell className="font-semibold">{formatter.format(sub.price)}</TableCell>
+                      <TableCell>
+                          <div className="flex space-x-2">
+                              {(sub.images || []).map(img => <a key={img} href={img} target="_blank" rel="noopener noreferrer"><Image src={img} alt="submission image" width={40} height={40} className="rounded object-cover" /></a>)}
+                          </div>
+                      </TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="ghost" size="icon" onClick={() => openModal('motorcycle', 'approve', sub)}>
                             <CheckCircle className="h-4 w-4 text-green-500"/>
@@ -360,8 +370,8 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Bike</TableHead>
+                    <TableHead>Images</TableHead>
                     <TableHead>Year</TableHead>
                     <TableHead>KM Driven</TableHead>
                     <TableHead>Condition</TableHead>
@@ -372,8 +382,12 @@ export default function AdminDashboard() {
                 <TableBody>
                   {listings.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell>{item.id}</TableCell>
                       <TableCell className="font-medium">{item.make} {item.model}</TableCell>
+                      <TableCell>
+                          <div className="flex space-x-2">
+                              {(item.images || []).map(img => <a key={img} href={img} target="_blank" rel="noopener noreferrer"><Image src={img} alt="listing image" width={40} height={40} className="rounded object-cover" /></a>)}
+                          </div>
+                      </TableCell>
                       <TableCell>{item.year}</TableCell>
                       <TableCell>{item.kmDriven.toLocaleString('en-IN')}</TableCell>
                       <TableCell><Badge variant="secondary">{item.condition}</Badge></TableCell>
@@ -387,7 +401,7 @@ export default function AdminDashboard() {
                                 <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive"/></Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
-                                <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the listing.</AlertDialogDescription></AlertDialogHeader>
+                                <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the listing and all its images from storage.</AlertDialogDescription></AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction onClick={() => handleAction(() => deleteMotorcycle(item.id), new FormData(), "Listing deleted.")}>Delete</AlertDialogAction>
@@ -498,11 +512,29 @@ export default function AdminDashboard() {
                             )} />
                         </div>
                         <FormField control={motorcycleForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        
+                        {(modalState.mode === 'edit' || modalState.mode === 'approve') && (
+                          <div className="space-y-2">
+                              <FormLabel>Existing Images</FormLabel>
+                              <div className="flex flex-wrap gap-2">
+                                  {motorcycleForm.getValues('existingImages')?.map((img) => (
+                                      <div key={img} className="relative group">
+                                          <Image src={img} alt="Existing image" width={80} height={80} className="rounded object-cover"/>
+                                          <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100" onClick={() => handleRemoveImage(img)}>
+                                              <X className="h-4 w-4"/>
+                                          </Button>
+                                      </div>
+                                  ))}
+                              </div>
+                               {motorcycleForm.getValues('existingImages')?.length === 0 && <p className="text-sm text-muted-foreground">No images exist for this listing.</p>}
+                          </div>
+                        )}
+
                         <FormField control={motorcycleForm.control} name="images" render={() => ( 
                           <FormItem>
-                            <FormLabel>Images</FormLabel>
+                            <FormLabel>{(modalState.mode === 'edit' || modalState.mode === 'approve') ? 'Upload New Images' : 'Images'}</FormLabel>
                             <FormControl><Input type="file" multiple {...motorcycleImagesRef} /></FormControl>
-                            <FormDescription>Upload new images here. Existing images will be kept unless you remove them.</FormDescription>
+                            <FormDescription>Upload new images here. Un-removed existing images will be kept.</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )} />
@@ -527,12 +559,24 @@ export default function AdminDashboard() {
                         <FormField control={testimonialForm.control} name="location" render={({ field }) => ( <FormItem><FormLabel>Location</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={testimonialForm.control} name="rating" render={({ field }) => ( <FormItem><FormLabel>Rating (1-5)</FormLabel><FormControl><Input type="number" min="1" max="5" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={testimonialForm.control} name="review" render={({ field }) => ( <FormItem><FormLabel>Review</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
+
+                        {modalState.mode === 'edit' && testimonialForm.getValues().existingImage && (
+                             <div className="space-y-2">
+                                <FormLabel>Current Image</FormLabel>
+                                <div className="flex items-center gap-4">
+                                     <Image src={testimonialForm.getValues().existingImage!} alt="Current testimonial image" width={60} height={60} className="rounded-md object-cover"/>
+                                     <Button variant="outline" size="sm" onClick={() => testimonialForm.setValue('existingImage', '')}>Remove Image</Button>
+                                </div>
+                                <FormDescription>Removing the image will save the testimonial without one. You can upload a new one below to replace it.</FormDescription>
+                             </div>
+                        )}
+                        
                         <FormField control={testimonialForm.control} name="image" render={() => ( 
                           <FormItem>
-                            <FormLabel>Image</FormLabel>
+                            <FormLabel>{testimonialForm.getValues().existingImage ? 'Upload New Image' : 'Image'}</FormLabel>
                             <FormControl><Input type="file" {...testimonialImageRef} /></FormControl>
                              {modalState.mode === 'edit' && testimonialForm.getValues().existingImage && (
-                                <FormDescription>Current image is set. Upload a new one to replace it.</FormDescription>
+                                <FormDescription>Upload a new file to replace the current one.</FormDescription>
                              )}
                             <FormMessage />
                           </FormItem>
@@ -551,5 +595,7 @@ export default function AdminDashboard() {
     </>
   );
 }
+
+    
 
     

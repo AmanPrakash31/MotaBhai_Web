@@ -41,6 +41,18 @@ async function uploadImages(images: File[], bucket: string): Promise<string[] | 
     return imageUrls;
 }
 
+async function deleteImages(urls: string[], bucket: string) {
+    if (!urls || urls.length === 0) return;
+    const fileNames = urls.map(url => new URL(url).pathname.split(`/${bucket}/`)[1]).filter(Boolean);
+    if (fileNames.length > 0) {
+        const { error } = await supabaseAdmin.storage.from(bucket).remove(fileNames);
+        if (error) {
+            console.error(`Supabase image deletion error in bucket ${bucket}:`, error);
+            // Decide if we should throw or just log. For now, just log.
+        }
+    }
+}
+
 export async function getSubmissions() {
   const allSubmissions = await db.select().from(listingSubmissions).orderBy(desc(listingSubmissions.submittedAt));
   return allSubmissions;
@@ -95,11 +107,18 @@ export async function updateMotorcycle(formData: FormData) {
 
     if (!id) throw new Error("Motorcycle ID is missing for update.");
     
+    const listingBeforeUpdate = await db.query.motorcycles.findFirst({ where: eq(motorcycles.id, id) });
+    const originalImages = listingBeforeUpdate?.images || [];
+
     const newImages = formData.getAll('images') as File[];
     const newImageUrls = await uploadImages(newImages, 'listings-images') || [];
-
+    
     const finalImages = [...(existingImages || []), ...newImageUrls];
     
+    // Determine which images were removed to delete them from storage
+    const imagesToDelete = originalImages.filter(img => !finalImages.includes(img));
+    await deleteImages(imagesToDelete, 'listings-images');
+
     await db.update(motorcycles).set({ ...dataToUpdate, images: finalImages }).where(eq(motorcycles.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
@@ -108,6 +127,11 @@ export async function updateMotorcycle(formData: FormData) {
 
 
 export async function deleteMotorcycle(id: number) {
+    const listingToDelete = await db.query.motorcycles.findFirst({ where: eq(motorcycles.id, id) });
+    if (listingToDelete?.images) {
+        await deleteImages(listingToDelete.images, 'listings-images');
+    }
+
     await db.delete(motorcycles).where(eq(motorcycles.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
@@ -147,20 +171,33 @@ export async function updateTestimonial(formData: FormData) {
     const { id, existingImage, ...dataToUpdate } = validatedData;
     if (!id) throw new Error("Testimonial ID is missing for update.");
 
+    const testimonialBeforeUpdate = await db.query.testimonials.findFirst({ where: eq(testimonials.id, id) });
+    const originalImage = testimonialBeforeUpdate?.image;
+
     const imageFile = formData.get('image') as File | null;
-    let imageUrl: string | null = existingImage || null;
+    let newImageUrl: string | null = existingImage || null;
+    
     if (imageFile && imageFile.size > 0) {
         const urls = await uploadImages([imageFile], 'testimonials-images');
-        imageUrl = urls ? urls[0] : null;
+        newImageUrl = urls ? urls[0] : null;
     }
 
-    await db.update(testimonials).set({ ...dataToUpdate, image: imageUrl }).where(eq(testimonials.id, id));
+    // If original image existed and the new one is different (or null), delete the old one.
+    if (originalImage && originalImage !== newImageUrl) {
+        await deleteImages([originalImage], 'testimonials-images');
+    }
+
+    await db.update(testimonials).set({ ...dataToUpdate, image: newImageUrl }).where(eq(testimonials.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
 }
 
 
 export async function deleteTestimonial(id: number) {
+    const testimonialToDelete = await db.query.testimonials.findFirst({ where: eq(testimonials.id, id) });
+    if (testimonialToDelete?.image) {
+        await deleteImages([testimonialToDelete.image], 'testimonials-images');
+    }
     await db.delete(testimonials).where(eq(testimonials.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
@@ -176,10 +213,20 @@ export async function approveAndAddMotorcycle(formData: FormData) {
     const validatedData = approveMotorcycleSchema.parse(rawData);
     const { submissionId, id, existingImages, ...dataToInsert } = validatedData;
     
+    const submissionBeforeApproval = await db.query.listingSubmissions.findFirst({ where: eq(listingSubmissions.id, submissionId) });
+    const originalSubmissionImages = submissionBeforeApproval?.images || [];
+
     const newImages = formData.getAll('images') as File[];
     const newImageUrls = await uploadImages(newImages, 'listings-images') || [];
 
     const finalImages = [...(existingImages || []), ...newImageUrls];
+
+    // Some images from the submission might have been removed during approval.
+    // We don't delete them here, we just don't add them to the final listing.
+    // The original submission record with its images will be deleted.
+    // If an image from submission was removed AND it's not in finalImages, it should be deleted.
+    const imagesToDelete = originalSubmissionImages.filter(img => !finalImages.includes(img));
+    await deleteImages(imagesToDelete, 'listings-images');
 
     await db.insert(motorcycles).values({ ...dataToInsert, images: finalImages });
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
@@ -192,18 +239,13 @@ export async function deleteSubmission(id: number) {
     const submissionToDelete = await db.select({images: listingSubmissions.images}).from(listingSubmissions).where(eq(listingSubmissions.id, id));
     
     if (submissionToDelete.length > 0 && submissionToDelete[0].images) {
-        const imagePaths = submissionToDelete[0].images.map(url => new URL(url).pathname.split('/listings-images/')[1]).filter(Boolean);
-        if (imagePaths.length > 0) {
-            const { error: deleteError } = await supabaseAdmin.storage.from('listings-images').remove(imagePaths);
-            if (deleteError) {
-                console.error("Supabase image deletion error:", deleteError);
-                // Decide if you want to stop the process or just log the error
-            }
-        }
+        await deleteImages(submissionToDelete[0].images, 'listings-images');
     }
     
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, id));
     revalidatePath('/admin');
 }
+
+    
 
     
