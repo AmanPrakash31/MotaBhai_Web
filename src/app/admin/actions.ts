@@ -264,3 +264,4 @@ export async function deleteSubmission(id: number) {
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, id));
     revalidatePath('/admin');
 }
+
