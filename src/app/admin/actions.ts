@@ -1,3 +1,4 @@
+
 'use server';
 import 'server-only'
 
@@ -66,19 +67,27 @@ const testimonialSchema = z.object({
     location: z.string().min(2),
     review: z.string().min(10),
     rating: z.coerce.number().min(1).max(5),
-    image: z.string().url(),
+    image: z.string().url().or(z.literal('')),
 });
 
 export async function addTestimonial(data: Omit<Testimonial, 'id'>) {
     const validatedData = testimonialSchema.parse(data);
-    await db.insert(testimonials).values(validatedData);
+    const dataToInsert = {
+        ...validatedData,
+        image: validatedData.image || null
+    }
+    await db.insert(testimonials).values(dataToInsert);
     revalidatePath('/admin');
     revalidatePath('/');
 }
 
 export async function updateTestimonial(id: number, data: Omit<Testimonial, 'id'>) {
     const validatedData = testimonialSchema.parse(data);
-    await db.update(testimonials).set(validatedData).where(eq(testimonials.id, id));
+    const dataToUpdate = {
+        ...validatedData,
+        image: validatedData.image || null
+    }
+    await db.update(testimonials).set(dataToUpdate).where(eq(testimonials.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
 }

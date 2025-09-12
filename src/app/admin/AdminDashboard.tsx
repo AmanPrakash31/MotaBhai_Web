@@ -54,11 +54,11 @@ const testimonialSchema = z.object({
   location: z.string().min(2, "Location is required"),
   review: z.string().min(10, "Review is required"),
   rating: z.coerce.number().min(1).max(5),
-  image: z.string().url("Must be a valid URL"),
+  image: z.string().url("Must be a valid URL").or(z.literal('')),
 });
 
-const TestimonialRowImage = ({ src, alt }: { src: string, alt: string }) => {
-  const [imageSrc, setImageSrc] = useState(src);
+const TestimonialRowImage = ({ src, alt }: { src: string | null, alt: string }) => {
+  const [imageSrc, setImageSrc] = useState(src || '/user.png');
   const handleError = () => setImageSrc('/user.png');
 
   return (
@@ -197,10 +197,10 @@ export default function AdminDashboard() {
   const openModal = (type: 'motorcycle' | 'testimonial', mode: 'add' | 'edit' | 'approve', data?: Motorcycle | Testimonial | ListingSubmission) => {
     setModalState({ type, mode, data, isOpen: true });
     if (type === 'motorcycle') {
-        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: [] as any };
+        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: [] };
 
         if (mode === 'edit' && data) {
-           defaultValues = { ...data, images: (data as Motorcycle).images.join(', ') as any };
+           defaultValues = { ...data, images: ((data as Motorcycle).images || []).join(', ') as any };
         } else if (mode === 'approve' && data) {
            const submission = data as ListingSubmission;
            defaultValues = {
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
         motorcycleForm.reset(defaultValues as any);
     }
     if (type === 'testimonial') {
-        const defaultValues = mode === 'edit' && data ? data : { rating: 5, image: '/user.png' };
+        const defaultValues = mode === 'edit' && data ? { ...data, image: data.image || '' } : { rating: 5, image: '' };
         testimonialForm.reset(defaultValues as any);
     }
   };
@@ -488,7 +488,7 @@ export default function AdminDashboard() {
                         <FormField control={testimonialForm.control} name="location" render={({ field }) => ( <FormItem><FormLabel>Location</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={testimonialForm.control} name="rating" render={({ field }) => ( <FormItem><FormLabel>Rating (1-5)</FormLabel><FormControl><Input type="number" min="1" max="5" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={testimonialForm.control} name="review" render={({ field }) => ( <FormItem><FormLabel>Review</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-                        <FormField control={testimonialForm.control} name="image" render={({ field }) => ( <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={testimonialForm.control} name="image" render={({ field }) => ( <FormItem><FormLabel>Image URL (Optional)</FormLabel><FormControl><Input {...field} placeholder="https://example.com/image.png" /></FormControl><FormMessage /></FormItem> )} />
                         
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
