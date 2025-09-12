@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { listingSubmissions } from '@/lib/db/schema';
 import { redirect } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -82,7 +82,7 @@ export async function submitListing(formData: FormData): Promise<{ success: bool
                 const fileExtension = image.name.split('.').pop();
                 const fileName = `${uuidv4()}.${fileExtension}`;
                 
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
                     .from('listings-images')
                     .upload(fileName, image);
 
@@ -91,7 +91,7 @@ export async function submitListing(formData: FormData): Promise<{ success: bool
                     return { success: false, error: 'Failed to upload one or more images.' };
                 }
 
-                const { data: publicUrlData } = supabase.storage
+                const { data: publicUrlData } = supabaseAdmin.storage
                     .from('listings-images')
                     .getPublicUrl(uploadData.path);
                 
