@@ -27,7 +27,7 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2, PlusCircle, Trash2, Pencil, CheckCircle } from 'lucide-react';
 
 const passwordSchema = z.object({
@@ -35,6 +35,7 @@ const passwordSchema = z.object({
 });
 
 const motorcycleSchema = z.object({
+  id: z.number().optional(),
   make: z.string().min(2, "Make is required"),
   model: z.string().min(1, "Model is required"),
   year: z.coerce.number().min(1900),
@@ -44,17 +45,20 @@ const motorcycleSchema = z.object({
   registration: z.string().min(2, "Registration is required"),
   condition: z.enum(['Excellent', 'Good', 'Fair', 'Poor']),
   description: z.string().min(10, "Description is required"),
-  images: z.string().transform(val => val.split(',').map(s => s.trim()).filter(Boolean)),
+  images: z.custom<FileList>().optional(),
+  existingImages: z.array(z.string()).optional(),
   // Used only for the approval flow
   submissionId: z.number().optional(),
 });
 
 const testimonialSchema = z.object({
+  id: z.number().optional(),
   name: z.string().min(2, "Name is required"),
   location: z.string().min(2, "Location is required"),
   review: z.string().min(10, "Review is required"),
   rating: z.coerce.number().min(1).max(5),
-  image: z.string().url("Must be a valid URL").or(z.literal('')),
+  image: z.custom<FileList>().optional(),
+  existingImage: z.string().optional(),
 });
 
 const TestimonialRowImage = ({ src, alt }: { src: string | null, alt: string }) => {
@@ -67,7 +71,7 @@ const TestimonialRowImage = ({ src, alt }: { src: string | null, alt: string }) 
       alt={alt} 
       width={40} 
       height={40} 
-      className="rounded-full" 
+      className="rounded-full object-cover" 
       onError={handleError}
     />
   );
@@ -162,58 +166,78 @@ export default function AdminDashboard() {
     minimumFractionDigits: 0,
   });
 
-  const handleAction = async (action: () => Promise<any>, successMessage: string) => {
+  const handleAction = async (formAction: (formData: FormData) => Promise<any>, formData: FormData, successMessage: string) => {
     startTransition(async () => {
         try {
-            await action();
+            await formAction(formData);
             toast({ title: 'Success', description: successMessage });
             setModalState({ type: null, mode: 'add', isOpen: false });
             fetchData();
         } catch (error) {
             console.error(error);
-            toast({ variant: 'destructive', title: 'Error', description: 'An unexpected error occurred.' });
+            toast({ variant: 'destructive', title: 'Error', description: error instanceof Error ? error.message : 'An unexpected error occurred.' });
         }
     });
   };
 
   const onMotorcycleSubmit = (values: z.infer<typeof motorcycleSchema>) => {
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === 'images' && value) {
+        Array.from(value as FileList).forEach(file => formData.append('images', file));
+      } else if (key === 'existingImages' && Array.isArray(value)) {
+        value.forEach(img => formData.append('existingImages', img));
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+    
     if (modalState.mode === 'add') {
-      handleAction(() => addMotorcycle(values), 'New motorcycle listing added.');
+      handleAction(addMotorcycle, formData, 'New motorcycle listing added.');
     } else if (modalState.mode === 'edit' && modalState.data) {
-      handleAction(() => updateMotorcycle(modalState.data!.id, values), 'Motorcycle listing updated.');
+      handleAction(updateMotorcycle, formData, 'Motorcycle listing updated.');
     } else if (modalState.mode === 'approve' && values.submissionId) {
-      handleAction(() => approveAndAddMotorcycle(values.submissionId!, values), 'Submission approved and new listing created.');
+      handleAction(approveAndAddMotorcycle, formData, 'Submission approved and new listing created.');
     }
   };
-
+  
   const onTestimonialSubmit = (values: z.infer<typeof testimonialSchema>) => {
+    const formData = new FormData();
+     Object.entries(values).forEach(([key, value]) => {
+      if (key === 'image' && value instanceof FileList && value.length > 0) {
+        formData.append('image', value[0]);
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
     if (modalState.mode === 'add') {
-      handleAction(() => addTestimonial(values), 'New testimonial added.');
+      handleAction(addTestimonial, formData, 'New testimonial added.');
     } else if (modalState.mode === 'edit' && modalState.data) {
-      handleAction(() => updateTestimonial(modalState.data!.id, values), 'Testimonial updated.');
+       handleAction(updateTestimonial, formData, 'Testimonial updated.');
     }
   };
   
   const openModal = (type: 'motorcycle' | 'testimonial', mode: 'add' | 'edit' | 'approve', data?: Motorcycle | Testimonial | ListingSubmission) => {
     setModalState({ type, mode, data, isOpen: true });
     if (type === 'motorcycle') {
-        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: [] };
+        let defaultValues: Partial<z.infer<typeof motorcycleSchema>> = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150 };
 
         if (mode === 'edit' && data) {
-           defaultValues = { ...data, images: ((data as Motorcycle).images || []).join(', ') as any };
+           const motorcycleData = data as Motorcycle;
+           defaultValues = { ...motorcycleData, existingImages: motorcycleData.images || [] };
         } else if (mode === 'approve' && data) {
            const submission = data as ListingSubmission;
            defaultValues = {
              ...submission,
-             // Submissions might not have images, default to empty string for the form field
-             images: (submission.images || []).join(', ') as any,
+             existingImages: submission.images || [],
              submissionId: submission.id,
            }
         }
         motorcycleForm.reset(defaultValues as any);
     }
     if (type === 'testimonial') {
-        const defaultValues = mode === 'edit' && data ? { ...data, image: data.image || '' } : { rating: 5, image: '' };
+        const defaultValues = mode === 'edit' && data ? { ...data, existingImage: data.image || undefined } : { rating: 5, existingImage: undefined };
         testimonialForm.reset(defaultValues as any);
     }
   };
@@ -249,6 +273,9 @@ export default function AdminDashboard() {
       </div>
     );
   }
+
+  const motorcycleImagesRef = motorcycleForm.register("images");
+  const testimonialImageRef = testimonialForm.register("image");
 
   return (
     <>
@@ -295,10 +322,10 @@ export default function AdminDashboard() {
                                 <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive"/></Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
-                                <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the submission.</AlertDialogDescription></AlertDialogHeader>
+                                <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the submission and its images.</AlertDialogDescription></AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleAction(() => deleteSubmission(sub.id), "Submission deleted.")}>Delete</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleAction(() => deleteSubmission(sub.id), new FormData(), "Submission deleted.")}>Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -359,7 +386,7 @@ export default function AdminDashboard() {
                                 <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the listing.</AlertDialogDescription></AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleAction(() => deleteMotorcycle(item.id), "Listing deleted.")}>Delete</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleAction(() => deleteMotorcycle(item.id), new FormData(), "Listing deleted.")}>Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -418,7 +445,7 @@ export default function AdminDashboard() {
                                 <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the testimonial.</AlertDialogDescription></AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleAction(() => deleteTestimonial(item.id), "Testimonial deleted.")}>Delete</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleAction(() => deleteTestimonial(item.id), new FormData(), "Testimonial deleted.")}>Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -467,7 +494,15 @@ export default function AdminDashboard() {
                             )} />
                         </div>
                         <FormField control={motorcycleForm.control} name="description" render={({ field }) => ( <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-                        <FormField control={motorcycleForm.control} name="images" render={({ field }) => ( <FormItem><FormLabel>Images</FormLabel><FormControl><Input {...field} /></FormControl><p className="text-sm text-muted-foreground">Enter image URLs, separated by commas.</p><FormMessage /></FormItem> )} />
+                        <FormField control={motorcycleForm.control} name="images" render={() => ( 
+                          <FormItem>
+                            <FormLabel>Images</FormLabel>
+                            <FormControl><Input type="file" multiple {...motorcycleImagesRef} /></FormControl>
+                            <FormDescription>Upload new images here. Existing images will be kept unless you remove them.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
                             <Button type="submit" disabled={isPending}>{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save</Button>
@@ -488,7 +523,16 @@ export default function AdminDashboard() {
                         <FormField control={testimonialForm.control} name="location" render={({ field }) => ( <FormItem><FormLabel>Location</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={testimonialForm.control} name="rating" render={({ field }) => ( <FormItem><FormLabel>Rating (1-5)</FormLabel><FormControl><Input type="number" min="1" max="5" {...field} /></FormControl><FormMessage /></FormItem> )} />
                         <FormField control={testimonialForm.control} name="review" render={({ field }) => ( <FormItem><FormLabel>Review</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem> )} />
-                        <FormField control={testimonialForm.control} name="image" render={({ field }) => ( <FormItem><FormLabel>Image URL (Optional)</FormLabel><FormControl><Input {...field} placeholder="https://example.com/image.png" /></FormControl><FormMessage /></FormItem> )} />
+                        <FormField control={testimonialForm.control} name="image" render={() => ( 
+                          <FormItem>
+                            <FormLabel>Image</FormLabel>
+                            <FormControl><Input type="file" {...testimonialImageRef} /></FormControl>
+                             {modalState.mode === 'edit' && testimonialForm.getValues().existingImage && (
+                                <FormDescription>Current image is set. Upload a new one to replace it.</FormDescription>
+                             )}
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                         
                         <DialogFooter>
                             <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
@@ -503,3 +547,5 @@ export default function AdminDashboard() {
     </>
   );
 }
+
+    
