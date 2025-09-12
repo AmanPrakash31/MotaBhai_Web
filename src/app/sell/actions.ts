@@ -1,3 +1,4 @@
+
 'use server';
 import 'server-only'
 
@@ -60,11 +61,18 @@ export async function submitListing(formData: FormData): Promise<{ success: bool
     }
 
     const { images, ...submissionData } = validation.data;
-    
+    const uploadedImages = formData.getAll('images') as File[];
+    const hasImages = uploadedImages.some(file => file.size > 0);
+
+    // In a real app, you would upload images to a storage service and get back the URLs.
+    // For now, we just check if images are present and store null if not.
+    const imageUrls = hasImages ? [] : null;
+
+
     try {
         const newSubmissions = await db.insert(listingSubmissions).values({
-            ...submissionData
-            // Note: Image files are not being saved.
+            ...submissionData,
+            images: imageUrls
         }).returning({
             id: listingSubmissions.id,
             submittedAt: listingSubmissions.submittedAt
