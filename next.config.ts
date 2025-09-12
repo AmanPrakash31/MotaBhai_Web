@@ -9,6 +9,9 @@ const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
 
 const nextConfig: NextConfig = {
   /* config options here */
+  serverActions: {
+    bodySizeLimit: '10mb',
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
