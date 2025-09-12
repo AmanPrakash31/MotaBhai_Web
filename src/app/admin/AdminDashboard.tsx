@@ -523,14 +523,14 @@ export default function AdminDashboard() {
                             <FormField
                                 control={motorcycleForm.control}
                                 name="existingImages"
-                                render={({ field }) => (
+                                render={({ field: { onChange, value, ...rest } }) => (
                                     <FormItem>
                                         <FormLabel>Existing Images</FormLabel>
                                         <FormControl>
                                             <>
-                                                <input type="hidden" {...field} value={field.value?.join(',') || ''} />
+                                                <input type="hidden" {...rest} value={value?.join(',') || ''} />
                                                 <div className="flex flex-wrap gap-2">
-                                                    {field.value?.map((img) => (
+                                                    {value?.map((img) => (
                                                         <div key={img} className="relative group">
                                                             <Image src={img} alt="Existing image" width={80} height={80} className="rounded object-cover"/>
                                                             <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100" onClick={() => handleRemoveImage(img, 'existingImages')}>
@@ -539,7 +539,7 @@ export default function AdminDashboard() {
                                                         </div>
                                                     ))}
                                                 </div>
-                                                {field.value?.length === 0 && <p className="text-sm text-muted-foreground">No images exist for this listing.</p>}
+                                                {value?.length === 0 && <p className="text-sm text-muted-foreground">No images exist for this listing.</p>}
                                             </>
                                         </FormControl>
                                         <FormMessage />
@@ -617,4 +617,5 @@ export default function AdminDashboard() {
     
 
     
+
 
