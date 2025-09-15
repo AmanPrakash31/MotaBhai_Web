@@ -185,8 +185,6 @@ export default function AdminDashboard() {
       if (key === 'images' && value) {
         Array.from(value).forEach(file => formData.append('images', file));
       } else if (key === 'existingImages' && Array.isArray(value)) {
-        // This is now handled by the hidden input, but we'll leave this for safety.
-        // It ensures the value is set for the server action.
         formData.append('existingImages', value.join(','));
       } else if (value !== undefined && value !== null) {
         formData.append(key, String(value));
@@ -196,6 +194,7 @@ export default function AdminDashboard() {
     if (modalState.mode === 'add') {
       handleAction(addMotorcycle, formData, 'New motorcycle listing added.');
     } else if (modalState.mode === 'edit' && modalState.data) {
+      formData.append('id', modalState.data.id);
       handleAction(updateMotorcycle, formData, 'Motorcycle listing updated.');
     } else if (modalState.mode === 'approve' && values.submissionId) {
       handleAction(approveAndAddMotorcycle, formData, 'Submission approved and new listing created.');
@@ -215,6 +214,7 @@ export default function AdminDashboard() {
     if (modalState.mode === 'add') {
       handleAction(addTestimonial, formData, 'New testimonial added.');
     } else if (modalState.mode === 'edit' && modalState.data) {
+       formData.append('id', modalState.data.id);
        handleAction(updateTestimonial, formData, 'Testimonial updated.');
     }
   };
@@ -225,8 +225,7 @@ export default function AdminDashboard() {
         let defaultValues = { year: new Date().getFullYear(), price: 0, kmDriven: 0, engineDisplacement: 150, images: undefined, existingImages: [] };
 
         if (mode === 'edit' && data) {
-           const motorcycleData = data;
-           const { images, ...rest } = motorcycleData;
+           const { images, ...rest } = data;
            defaultValues = { ...rest, existingImages: images || [] };
         } else if (mode === 'approve' && data) {
            const submission = data;
@@ -527,7 +526,7 @@ export default function AdminDashboard() {
                                         <FormLabel>Existing Images</FormLabel>
                                         <FormControl>
                                             <>
-                                                <input type="hidden" {...field} name="existingImages" value={field.value?.join(',') || ''} />
+                                                <input type="hidden" name="existingImages" value={field.value?.join(',') || ''} />
                                                 <div className="flex flex-wrap gap-2">
                                                     {field.value?.map((img) => (
                                                         <div key={img} className="relative group">
