@@ -111,7 +111,12 @@ export async function addMotorcycle(formData) {
 
     const { existingImages, id, ...dataToInsert } = validatedData;
     
-    await db.insert(motorcycles).values({ ...dataToInsert, images: allImageUrls });
+    const payload = {
+        ...dataToInsert,
+        images: allImageUrls,
+    };
+    
+    await db.insert(motorcycles).values(payload);
     revalidatePath('/admin');
     revalidatePath('/');
 }
@@ -131,11 +136,15 @@ export async function updateMotorcycle(formData) {
     
     const finalImages = [...existingImages, ...newImageUrls];
     
-    // Determine which images were removed to delete them from storage
     const imagesToDelete = originalImages.filter(img => !finalImages.includes(img));
     await deleteImages(imagesToDelete, 'listings-images');
 
-    await db.update(motorcycles).set({ ...dataToUpdate, images: finalImages }).where(eq(motorcycles.id, id));
+    const payload = {
+        ...dataToUpdate,
+        images: finalImages,
+    };
+
+    await db.update(motorcycles).set(payload).where(eq(motorcycles.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
     revalidatePath(`/${id}`);
@@ -176,7 +185,12 @@ export async function addTestimonial(formData) {
     
     const { existingImage, id, ...dataToInsert } = validatedData;
     
-    await db.insert(testimonials).values({ ...dataToInsert, image: imageUrl });
+    const payload = {
+        ...dataToInsert,
+        image: imageUrl,
+    };
+    
+    await db.insert(testimonials).values(payload);
     revalidatePath('/admin');
     revalidatePath('/');
 }
@@ -196,17 +210,19 @@ export async function updateTestimonial(formData) {
     if (imageFile && imageFile.size > 0) {
         const urls = await uploadImages([imageFile], 'testimonials-images');
         newImageUrl = urls.length > 0 ? urls[0] : null;
-        // If we uploaded a new image, the old one should be deleted if it existed
         if (originalImage && originalImage !== newImageUrl) {
             await deleteImages([originalImage], 'testimonials-images');
         }
     } else if (originalImage && !newImageUrl) {
-        // This case handles removing an image without uploading a new one
         await deleteImages([originalImage], 'testimonials-images');
     }
 
+    const payload = {
+        ...dataToUpdate,
+        image: newImageUrl,
+    };
 
-    await db.update(testimonials).set({ ...dataToUpdate, image: newImageUrl }).where(eq(testimonials.id, id));
+    await db.update(testimonials).set(payload).where(eq(testimonials.id, id));
     revalidatePath('/admin');
     revalidatePath('/');
 }
@@ -242,12 +258,15 @@ export async function approveAndAddMotorcycle(formData) {
 
     const finalImages = [...existingImages, ...newImageUrls];
 
-    // Images from the original submission might have been removed during approval.
-    // Here we find which ones to delete from Supabase storage.
     const imagesToDelete = originalSubmissionImages.filter(img => !finalImages.includes(img));
     await deleteImages(imagesToDelete, 'listings-images');
 
-    await db.insert(motorcycles).values({ ...dataToInsert, images: finalImages });
+    const payload = {
+        ...dataToInsert,
+        images: finalImages
+    };
+
+    await db.insert(motorcycles).values(payload);
     await db.delete(listingSubmissions).where(eq(listingSubmissions.id, submissionId));
 
     revalidatePath('/admin');
