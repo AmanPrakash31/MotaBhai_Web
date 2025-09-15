@@ -1,3 +1,4 @@
+
 import { db } from '@/lib/db';
 import { motorcycles as motorcyclesTable } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -21,7 +22,8 @@ export async function generateStaticParams() {
 }
 
 export default async function MotorcycleDetailPage({ params }: { params: { id: string } }) {
-  const motorcycleId = parseInt(params.id, 10);
+  const resolvedParams = await params;
+  const motorcycleId = parseInt(resolvedParams.id, 10);
   if (isNaN(motorcycleId)) {
     notFound();
   }
@@ -61,7 +63,7 @@ export default async function MotorcycleDetailPage({ params }: { params: { id: s
         <div className="lg:col-span-3">
           <Carousel className="w-full rounded-lg overflow-hidden shadow-lg">
             <CarouselContent>
-              {motorcycle.images.map((src, index) => (
+              {motorcycle.images && motorcycle.images.map((src, index) => (
                 <CarouselItem key={index}>
                   <div className="aspect-w-16 aspect-h-10">
                     <Image
